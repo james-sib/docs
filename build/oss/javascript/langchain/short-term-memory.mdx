@@ -97,7 +97,7 @@ const stateExtensionMiddleware = createMiddleware({
 
 const checkpointer = new MemorySaver();
 const agent = createAgent({
-    model: "gpt-5",
+    model: "gpt-5.4",
     tools: [],
     middleware: [stateExtensionMiddleware],  // [!code highlight]
     checkpointer,
