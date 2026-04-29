@@ -111,7 +111,7 @@ Restart OpenCode after adding the plugin and configuration.
 
 ## End-to-end example
 
-The following example starts from an empty project directory and configures project-level OpenCode tracing.
+The following example starts from an empty project directory, configures project-level OpenCode tracing, runs OpenCode non-interactively, and verifies that the assistant created a file.
 
 <Steps>
 <Step title="Create a project">
@@ -148,34 +148,67 @@ EOF
 ```
 
 </Step>
-<Step title="Set LangSmith environment variables">
+<Step title="Set environment variables">
 
 ```bash
-export LANGSMITH_API_KEY=<your-api-key>
+export LANGSMITH_API_KEY=<your-langsmith-api-key>
 export LANGSMITH_PROJECT=my-opencode-project
+export OPENCODE_MODEL=<provider>/<model>
 ```
 
-If your API key is linked to multiple workspaces, also set `LANGSMITH_WORKSPACE_ID`.
+For example, `OPENCODE_MODEL` can be `anthropic/claude-sonnet-4-5` if you have Anthropic credentials configured for OpenCode. If your LangSmith API key is linked to multiple workspaces, also set `LANGSMITH_WORKSPACE_ID`.
 
 </Step>
-<Step title="Start OpenCode and run a prompt">
-
-Start OpenCode from the project directory, then ask it to make a small change:
+<Step title="Run OpenCode and verify the result">
 
 ```bash
-opencode
+opencode run \
+  --model "$OPENCODE_MODEL" \
+  --dangerously-skip-permissions \
+  "Create a short README.md for this project."
+
+test -f README.md
 ```
 
-For example, prompt OpenCode with:
-
-```text
-Create a README for this project.
-```
-
-OpenCode installs the `langsmith` dependency from `.opencode/package.json` when it starts. After the assistant completes the turn, open the configured LangSmith project to view the trace.
+OpenCode installs the `langsmith` dependency from `.opencode/package.json` when it starts. After the command exits, open the configured LangSmith project to view the trace.
 
 </Step>
 </Steps>
+
+You can also run the same flow as a single copy-paste script:
+
+```bash
+mkdir my-opencode-project
+cd my-opencode-project
+git init
+mkdir -p .opencode/plugins
+cat > .opencode/package.json <<'EOF'
+{
+  "dependencies": {
+    "langsmith": "latest"
+  }
+}
+EOF
+cat > .opencode/plugins/langsmith.ts <<'EOF'
+export { LangSmithPlugin } from "langsmith/experimental/opencode";
+EOF
+cat > opencode.json <<'EOF'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "experimental": {
+    "opentelemetry": true
+  }
+}
+EOF
+export LANGSMITH_API_KEY=<your-langsmith-api-key>
+export LANGSMITH_PROJECT=my-opencode-project
+export OPENCODE_MODEL=<provider>/<model>
+opencode run \
+  --model "$OPENCODE_MODEL" \
+  --dangerously-skip-permissions \
+  "Create a short README.md for this project."
+test -f README.md
+```
 
 ## View traces in LangSmith
 
