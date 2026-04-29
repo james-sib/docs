@@ -74,6 +74,10 @@ You do **not** need middleware when tools alone use context or `runtime.store`; 
 
 
 
+<Tip>
+    To adjust the assembled system prompt for a specific provider or model, use a [harness profile](/oss/python/deepagents/profiles#harness-profiles): `base_system_prompt` replaces the base prompt outright, and `system_prompt_suffix` appends to it.
+</Tip>
+
 ### Memory
 
 Memory files ([`AGENTS.md`](https://agents.md/)) provide persistent context that is **always loaded** into the system prompt. Use memory for project conventions, user preferences, and critical guidelines that should apply to every conversation:
@@ -144,6 +148,10 @@ def search_orders(
 
 
 
+
+<Tip>
+    To override a built-in or user-supplied tool's description for a specific provider or model, use a [harness profile](/oss/python/deepagents/profiles#harness-profiles)'s `tool_description_overrides` keyed by tool name. `excluded_tools` removes a tool from the visible tool set entirely.
+</Tip>
 
 See [Harness](/oss/python/deepagents/harness) for built-in capabilities and [Customization](/oss/python/deepagents/customization#tools) for passing tools directly.
 
