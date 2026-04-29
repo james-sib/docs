@@ -1,0 +1,135 @@
+---
+title: Trace OpenCode sessions
+sidebarTitle: OpenCode
+description: Trace OpenCode sessions with LangSmith.
+---
+
+[OpenCode](https://opencode.ai/) is an agentic coding tool for the terminal and desktop. LangSmith provides a JavaScript SDK integration that traces OpenCode sessions, including user messages, assistant turns, tool calls, subagent sessions, file attachments, model metadata, and token usage.
+
+## Installation
+
+<Info>
+Requires JS SDK version `langsmith>=0.5.26`.
+</Info>
+
+Install `langsmith` in your OpenCode config directory. Use the project config directory to enable tracing for one project, or the global config directory to enable tracing for all OpenCode projects.
+
+<Tabs>
+<Tab title="Project">
+
+Create or update `.opencode/package.json`:
+
+```json
+{
+  "dependencies": {
+    "langsmith": "^0.5.26"
+  }
+}
+```
+
+</Tab>
+<Tab title="Global">
+
+Create or update `~/.config/opencode/package.json`:
+
+```json
+{
+  "dependencies": {
+    "langsmith": "^0.5.26"
+  }
+}
+```
+
+</Tab>
+</Tabs>
+
+OpenCode installs dependencies in its config directory with Bun when it starts. Create the `plugins` directory if it does not already exist.
+
+## Configure LangSmith
+
+Set your [LangSmith API key](/langsmith/create-account-api-key) and project name in your shell environment:
+
+```bash
+export LANGSMITH_API_KEY=<your-api-key>
+export LANGSMITH_PROJECT=<your-project-name>
+
+# For LangSmith API keys linked to multiple workspaces, set the workspace ID.
+export LANGSMITH_WORKSPACE_ID=<your-workspace-id>
+```
+
+## Enable the plugin
+
+Create an OpenCode plugin file that re-exports the LangSmith plugin.
+
+<Tabs>
+<Tab title="Project">
+
+```ts .opencode/plugins/langsmith.ts
+export { LangSmithPlugin } from "langsmith/experimental/opencode";
+```
+
+</Tab>
+<Tab title="Global">
+
+```ts ~/.config/opencode/plugins/langsmith.ts
+export { LangSmithPlugin } from "langsmith/experimental/opencode";
+```
+
+</Tab>
+</Tabs>
+
+Enable OpenCode's experimental telemetry hooks in your OpenCode configuration:
+
+<Tabs>
+<Tab title="Project">
+
+```json opencode.json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "experimental": {
+    "opentelemetry": true
+  }
+}
+```
+
+</Tab>
+<Tab title="Global">
+
+```json ~/.config/opencode/opencode.json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "experimental": {
+    "opentelemetry": true
+  }
+}
+```
+
+</Tab>
+</Tabs>
+
+Restart OpenCode after adding the plugin and configuration.
+
+## View traces in LangSmith
+
+After OpenCode completes a turn, open your LangSmith project to view traces. Each completed user turn is recorded as an `opencode.session` trace with nested `opencode.assistant.turn` LLM runs and tool runs.
+
+All turns from the same OpenCode session use the OpenCode session ID as the LangSmith `thread_id`, so you can inspect the session in the project **Threads** tab.
+
+## Trace contents
+
+The OpenCode integration records:
+
+- User messages and assistant responses in the standard LangSmith chat format
+- Assistant turn metadata, including model provider, model name, invocation parameters, and token usage when available
+- Tool calls with inputs, outputs, errors, attachments, and tool metadata
+- Subagent sessions nested under the parent assistant turn
+- File attachments and compaction events when emitted by OpenCode
+
+## Troubleshooting
+
+If traces do not appear in LangSmith:
+
+- Confirm `LANGSMITH_API_KEY` and `LANGSMITH_PROJECT` are set in the environment where OpenCode starts.
+- Confirm the `langsmith` dependency is listed in the same OpenCode config directory as the plugin file.
+- Restart OpenCode so it reloads plugins and installs config-directory dependencies.
+- Confirm `experimental.opentelemetry` is set to `true` in the OpenCode configuration that applies to the session.
