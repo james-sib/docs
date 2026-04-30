@@ -584,6 +584,10 @@ Edges define how the logic is routed and how the graph decides to stop. This is 
 
 A node can have multiple outgoing edges. If a node has multiple outgoing edges, **all** of those destination nodes will be executed in parallel as a part of the next superstep.
 
+<Warning>
+For each node, choose one routing mechanism: use normal edges for static routing, or use conditional edges / [`Command`](https://reference.langchain.com/javascript/langchain-langgraph/index/Command) for dynamic routing. Do not mix normal edges and dynamic routing from the same node, because both paths can execute and make graph behavior harder to reason about.
+</Warning>
+
 ### Normal edges
 
 
@@ -747,7 +751,7 @@ builder.addNode("myNode", myNode, {
 
 <Warning>
 
-[`Command`](https://reference.langchain.com/javascript/langchain-langgraph/index/Command) only adds dynamic edges—static edges defined with `add_edge` / `addEdge` still execute. For example, if `node_a` returns `Command(goto="my_other_node")` and you also have `graph.add_edge("node_a", "node_b")`, both `node_b` and `my_other_node` will run.
+[`Command`](https://reference.langchain.com/javascript/langchain-langgraph/index/Command) only adds dynamic edges—static edges defined with `add_edge` / `addEdge` still execute. For example, if `node_a` returns `Command(goto="my_other_node")` and you also have `graph.add_edge("node_a", "node_b")`, both `node_b` and `my_other_node` will run. For each node, use either [`Command`](https://reference.langchain.com/javascript/langchain-langgraph/index/Command) or static edges to route to the next nodes, not both.
 
 </Warning>
 
@@ -836,7 +840,7 @@ You can return [`Command`](https://reference.langchain.com/javascript/langchain-
 
 <Warning>
 
-When used inside tools, `goto` adds a dynamic edge—any static edges already defined on the node that called the tool will still execute.
+When used inside tools, `goto` adds a dynamic edge—any static edges already defined on the node that called the tool will still execute. For each node, use either tool-driven dynamic routing or static edges to route to the next nodes, not both.
 
 </Warning>
 
