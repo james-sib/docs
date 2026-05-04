@@ -88,6 +88,8 @@ Your integration package will typically implement a subclass of at least one of 
     <Tab title="Checkpointers">
         Checkpointers enable [persistence](/oss/langgraph/persistence) in LangGraph, allowing agents to save and resume state across interactions. Checkpointer integrations subclass @[`BaseCheckpointSaver`] from `langgraph-checkpoint` and persist LangGraph checkpoint records, channel blobs, metadata, and intermediate writes in an external backend.
 
+        Read the [persistence guide](/oss/langgraph/persistence) and the [`langgraph-checkpoint` README](https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint) before writing your own saver. They cover the data model — checkpoints, threads, channel versions, pending writes, and serialization — that the contract below assumes.
+
         ## Implement the storage contract
 
         A production checkpointer should implement the synchronous and asynchronous forms of the core saver methods:
@@ -100,7 +102,7 @@ Your integration package will typically implement a subclass of at least one of 
         | `put_writes` / `aput_writes` | Store intermediate writes keyed by checkpoint, task ID, and write index. Use `WRITES_IDX_MAP` from `langgraph.checkpoint.base` for special channels such as errors, interrupts, and resumes. |
         | `delete_thread` / `adelete_thread` | Delete all checkpoints, blobs, and writes for a thread. |
 
-        Optional Agent Server operations include `delete_for_runs` / `adelete_for_runs`, `copy_thread` / `acopy_thread`, and `prune` / `aprune`.
+        Optional Agent Server operations include `delete_for_runs` / `adelete_for_runs`, `copy_thread` / `acopy_thread`, and `prune` / `aprune`. Override `get_next_version` if your backend needs a custom channel-version scheme; the default produces a monotonically increasing integer sequence.
 
         Model your backend around these logical records:
 
@@ -108,30 +110,151 @@ Your integration package will typically implement a subclass of at least one of 
         - Channel blob records keyed by `thread_id`, `checkpoint_ns`, channel name, and channel version. Only store blobs for channel versions provided in `new_versions`; preserve empty markers for versions without a value.
         - Write records keyed by `thread_id`, `checkpoint_ns`, `checkpoint_id`, `task_id`, and write index. Store the channel, serialized value, and `task_path` so pending writes can be returned in deterministic order.
 
+        Use `self.serde` (the saver's @[`SerializerProtocol`]) for every value you persist or load. Do not substitute another encoder — `JsonPlusSerializer` round-trips LangChain messages, datetimes, enums, sentinels, and other primitives that custom encoders typically lose.
+
+        ```python Example BaseCheckpointSaver scaffold expandable
+        from __future__ import annotations
+
+        from collections.abc import AsyncIterator, Iterator, Sequence
+        from typing import Any
+
+        from langchain_core.runnables import RunnableConfig
+
+        from langgraph.checkpoint.base import (  # [!code highlight]
+            BaseCheckpointSaver,
+            ChannelVersions,
+            Checkpoint,
+            CheckpointMetadata,
+            CheckpointTuple,
+        )
+
+
+        class MyCheckpointer(BaseCheckpointSaver[str]):
+            def __init__(self, client: MyBackendClient) -> None:
+                super().__init__()
+                self._client = client
+
+            def put(
+                self,
+                config: RunnableConfig,
+                checkpoint: Checkpoint,
+                metadata: CheckpointMetadata,
+                new_versions: ChannelVersions,
+            ) -> RunnableConfig: ...
+
+            def put_writes(
+                self,
+                config: RunnableConfig,
+                writes: Sequence[tuple[str, Any]],
+                task_id: str,
+                task_path: str = "",
+            ) -> None: ...
+
+            def get_tuple(self, config: RunnableConfig) -> CheckpointTuple | None: ...
+
+            def list(
+                self,
+                config: RunnableConfig | None,
+                *,
+                filter: dict[str, Any] | None = None,
+                before: RunnableConfig | None = None,
+                limit: int | None = None,
+            ) -> Iterator[CheckpointTuple]: ...
+
+            def delete_thread(self, thread_id: str) -> None: ...
+
+            # Async variants — required for `ainvoke`, `astream`, and `abatch`.
+            async def aput(self, *args, **kwargs) -> RunnableConfig: ...
+            async def aput_writes(self, *args, **kwargs) -> None: ...
+            async def aget_tuple(self, config: RunnableConfig) -> CheckpointTuple | None: ...
+            async def alist(self, *args, **kwargs) -> AsyncIterator[CheckpointTuple]: ...
+            async def adelete_thread(self, thread_id: str) -> None: ...
+        ```
+
         ## Add delta channel support
 
-        `DeltaChannel` reduces checkpoint storage by storing a delta sentinel instead of the full channel value on most steps. LangGraph reconstructs the channel by replaying ancestor writes through the channel reducer. A checkpointer supports delta channels when it can answer that reconstruction query correctly.
+        @[`DeltaChannel`] reduces checkpoint storage by writing only the per-step delta and a `DELTA_SENTINEL` placeholder in `channel_values`, instead of the full accumulated channel value. LangGraph reconstructs the channel by replaying ancestor writes through the channel's bulk reducer. A checkpointer supports delta channels when it can answer that reconstruction query correctly.
 
         To support delta channels:
 
-        1. Preserve delta sentinel and snapshot values exactly through your serializer. Do not drop unknown sentinel-like values from `checkpoint["channel_values"]` or channel blob storage.
-        2. Store writes through `put_writes` / `aput_writes` before the next checkpoint is committed, and return those writes from `get_tuple` as `pending_writes` in stable oldest-to-newest order.
-        3. Preserve `parent_checkpoint_id` and return `parent_config` from `get_tuple`. Delta reconstruction follows the parent chain, not a timestamp-ordered `list()` result, so forked threads must only replay writes on the selected path.
-        4. Implement `_get_channel_writes_history(config, channel)` and `_aget_channel_writes_history(config, channel)` if your backend can query storage directly. The method should start at the target checkpoint's parent, exclude writes stored at the target checkpoint, collect writes for the requested channel oldest-to-newest, and stop at the nearest non-sentinel blob. The returned seed is that blob value; if none exists, return `DELTA_SENTINEL` as the seed.
-        5. Treat `_DeltaSnapshot` blobs as seed values. Delta channels with `snapshot_frequency` write these snapshots periodically to bound replay depth.
-        6. Preserve pre-delta migration behavior. If a thread was written before a channel switched to `DeltaChannel`, the nearest plain stored value for that channel is the seed and older writes must not be replayed past it.
+        1. Preserve `DELTA_SENTINEL` and `_DeltaSnapshot` values exactly through your serializer. Do not drop sentinel-like values from `checkpoint["channel_values"]` or channel blob storage — `JsonPlusSerializer` already handles them, so most savers only need to ensure they call `self.serde` for every value.
+        2. Persist intermediate writes through `put_writes` / `aput_writes` before the next checkpoint is committed, and return them from `get_tuple` as `pending_writes` in stable oldest-to-newest order (sort by `(task_id, write_idx)`). Replay correctness depends on this ordering being deterministic across reads.
+        3. Preserve `parent_checkpoint_id` and return `parent_config` from `get_tuple`. Delta reconstruction walks the parent chain, not a timestamp-ordered `list()` result, so forked threads must only replay writes on the selected path.
+        4. Treat `_DeltaSnapshot` blobs as seed values. When a delta channel is configured with `snapshot_frequency=K`, the channel writes a periodic full snapshot to bound replay depth; the seed walk must stop at the nearest snapshot or pre-delta blob.
+        5. Preserve pre-delta migration behavior. If a thread was written before a channel switched to `DeltaChannel`, the nearest plain stored value for that channel is the seed and older ancestor writes must not be replayed past it.
+        6. (Optional) Override `_get_channel_writes_history(config, channel)` and `_aget_channel_writes_history(config, channel)` if your backend can query storage directly. The default implementation walks `get_tuple` along `parent_config`, which is correct but issues one read per ancestor checkpoint.
 
-        The default `_get_channel_writes_history` implementation can work for simple savers whose `get_tuple` returns complete `parent_config` and `pending_writes` data. Backends with direct storage access should override it for performance, following the in-memory and PostgreSQL implementations in the LangGraph repo.
+        The default `_get_channel_writes_history` works for any saver whose `get_tuple` returns full `parent_config` and `pending_writes`. Override it for backends with direct storage access — the in-memory and PostgreSQL savers in the [`langgraph-checkpoint` repo](https://github.com/langchain-ai/langgraph/tree/main/libs) show the pattern: start at the target checkpoint's parent, exclude writes stored at the target checkpoint itself, collect writes for the requested channel newest-to-oldest, and stop at the nearest non-sentinel blob (returning that blob as the seed). If the walk reaches the root with no stored value, return `DELTA_SENTINEL` as the seed.
+
+        ```python Example _get_channel_writes_history override expandable
+        from langgraph.checkpoint.base import (  # [!code highlight]
+            DELTA_SENTINEL,
+            PendingWrite,
+            _ChannelWritesHistory,
+        )
+        from langgraph.checkpoint.serde.types import _DeltaSnapshot
+
+
+        def _get_channel_writes_history(
+            self, config: RunnableConfig, channel: str
+        ) -> _ChannelWritesHistory:
+            target = self._fetch_checkpoint_row(config)
+            parent_id = target.parent_checkpoint_id if target else None
+            collected: list[PendingWrite] = []  # newest-first; reversed before return
+
+            cursor_id = parent_id
+            while cursor_id is not None:
+                ancestor = self._fetch_checkpoint_row_by_id(cursor_id)
+                if ancestor is None:
+                    break
+
+                # 1. Check the ancestor's blob for `channel` BEFORE its writes:
+                #    a non-sentinel value subsumes any writes stored at this step.
+                blob = self._fetch_blob(ancestor, channel)
+                if blob is not None and blob is not DELTA_SENTINEL:
+                    if isinstance(blob, _DeltaSnapshot):
+                        # Snapshot frequency: snapshot is state AT this ancestor;
+                        # the ancestor's own writes encode the next step and must
+                        # still be replayed on top.
+                        collected.extend(
+                            reversed(self._fetch_writes(ancestor, channel))
+                        )
+                    collected.reverse()
+                    return _ChannelWritesHistory(seed=blob, writes=collected)
+
+                # 2. Otherwise, fold this ancestor's writes for `channel` and walk up.
+                collected.extend(reversed(self._fetch_writes(ancestor, channel)))
+                cursor_id = ancestor.parent_checkpoint_id
+
+            collected.reverse()
+            return _ChannelWritesHistory(seed=DELTA_SENTINEL, writes=collected)
+        ```
 
         ## Test your checkpointer
 
-        Validate the core contract with the conformance suite from `langgraph-checkpoint-conformance`:
+        Validate the core contract with the [conformance suite](https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint-conformance) from `langgraph-checkpoint-conformance`:
 
         ```bash
         pip install langgraph-checkpoint-conformance
         ```
 
-        The suite checks required capabilities such as `put`, `put_writes`, `get_tuple`, `list`, and `delete_thread`, and auto-detects optional operations such as `copy_thread` and `prune`. Add targeted tests for delta-channel behavior until your backend is covered by the conformance suite: fresh delta threads, migration from an existing reducer such as `add_messages`, fork/time-travel replay, snapshot frequency, and sync plus async saver paths.
+        Register your saver with `@checkpointer_test` and run `validate()`. The suite checks required capabilities (`put`, `put_writes`, `get_tuple`, `list`, `delete_thread`) and auto-detects optional operations (`copy_thread`, `prune`, `delete_for_runs`); skipped tests are reported per capability.
+
+        ```python
+        from langgraph.checkpoint.conformance import checkpointer_test, validate
+
+
+        @checkpointer_test(name="MyCheckpointer")
+        async def my_checkpointer():
+            yield MyCheckpointer(client=...)
+
+
+        report = await validate(my_checkpointer)
+        report.print_report()
+        assert report.passed_all_base()
+        ```
+
+        Add targeted tests for delta-channel behavior on top of conformance: fresh delta threads, migration from a non-delta reducer such as `add_messages`, fork/time-travel replay, `snapshot_frequency`, and both sync and async saver paths.
 
         ## Reference implementations
 
