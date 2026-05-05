@@ -1,0 +1,2932 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "Headless Fleet API. Agents, integrations, connections, triggers, threads, runs.",
+        "title": "Fleet API",
+        "contact": {},
+        "version": "v1"
+    },
+    "paths": {
+        "/v1/fleet/integrations": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns integrations available to the workspace.",
+                "tags": [
+                    "fleet integrations"
+                ],
+                "summary": "List integrations",
+                "parameters": [
+                    {
+                        "description": "Filter by source (e.g. langchain, custom)",
+                        "name": "source",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Items per page (default 20, max 100)",
+                        "name": "page_size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Opaque pagination cursor",
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Registers a new custom integration. Type is forced to CUSTOM.",
+                "tags": [
+                    "fleet integrations"
+                ],
+                "summary": "Create a custom integration",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/integrations.CreateRequest"
+                            }
+                        }
+                    },
+                    "description": "Integration to create",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.Integration"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/fleet/integrations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "tags": [
+                    "fleet integrations"
+                ],
+                "summary": "Get an integration",
+                "parameters": [
+                    {
+                        "description": "Integration id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.Integration"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Idempotent. Returns 204 whether or not the integration existed.",
+                "tags": [
+                    "fleet integrations"
+                ],
+                "summary": "Delete a custom integration",
+                "parameters": [
+                    {
+                        "description": "Integration id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Updates mutable fields. URL is immutable.",
+                "tags": [
+                    "fleet integrations"
+                ],
+                "summary": "Update a custom integration",
+                "parameters": [
+                    {
+                        "description": "Integration id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/integrations.UpdateRequest"
+                            }
+                        }
+                    },
+                    "description": "Fields to update",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.Integration"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/fleet/integrations/{id}/auth-methods": {
+            "put": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Replaces the integration's full list of supported auth methods.",
+                "tags": [
+                    "fleet integrations"
+                ],
+                "summary": "Replace integration auth methods",
+                "parameters": [
+                    {
+                        "description": "Integration id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/integrations.ReplaceAuthMethodsRequest"
+                            }
+                        }
+                    },
+                    "description": "Auth methods to set",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.Integration"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/integrations.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/fleet/mcp/tools": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns tools from a remote MCP server. Serves cached results when fresh, otherwise fetches from the remote server and caches the response.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "List MCP tools",
+                "parameters": [
+                    {
+                        "description": "MCP server URL to fetch tools from",
+                        "name": "url",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "OAuth provider ID for token-based auth",
+                        "name": "oauth_provider_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Skip cache and fetch fresh tools",
+                        "name": "force_refresh",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "description": "User ID override (service-key callers)",
+                        "name": "ls_user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcptools.ListToolsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcptools.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcptools.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcptools.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcptools.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcptools.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/mcp-servers": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns MCP servers visible to the caller after ABAC filtering. Service-key callers may pass X-Ls-User-Id to resolve per-user OAuth providers.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "List MCP servers",
+                "parameters": [
+                    {
+                        "description": "User UUID for per-user OAuth resolution (service keys)",
+                        "name": "X-Ls-User-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/mcp_servers.McpServer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Registers a new MCP server configuration for the workspace.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "Create MCP server",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/mcp_servers.CreateMcpServerPayload"
+                            }
+                        }
+                    },
+                    "description": "Create payload",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/mcp-servers/{mcp_server_id}": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns a single MCP server by ID.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "Get MCP server",
+                "parameters": [
+                    {
+                        "description": "MCP server ID",
+                        "name": "mcp_server_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Deletes an MCP server configuration.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "Delete MCP server",
+                "parameters": [
+                    {
+                        "description": "MCP server ID",
+                        "name": "mcp_server_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Partially updates an MCP server. Tool list cache is invalidated on success.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "Update MCP server",
+                "parameters": [
+                    {
+                        "description": "MCP server ID",
+                        "name": "mcp_server_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/mcp_servers.UpdateMcpServerPayload"
+                            }
+                        }
+                    },
+                    "description": "Update payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/mcp-servers/{mcp_server_id}/oauth-provider": {
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Discovers and registers an OAuth provider for a user against an MCP server configured with per-user dynamic client mode. Idempotent when a mapping already exists.",
+                "tags": [
+                    "fleet mcp"
+                ],
+                "summary": "Register per-user MCP OAuth provider",
+                "parameters": [
+                    {
+                        "description": "MCP server ID",
+                        "name": "mcp_server_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/mcp_servers.RegisterOAuthProviderPayload"
+                            }
+                        }
+                    },
+                    "description": "User binding",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.RegisterOAuthProviderResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/mcp_servers.McpServerAPIError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/auth": {
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Generate a GitHub OAuth link for the current user to connect their GitHub account.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Get GitHub OAuth authorization link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.UserAuthLinkResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/connection": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Return the current user's GitHub connection status and metadata.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Get GitHub user connection status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.UserConnectionStatus"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Remove the current user's GitHub connection and all linked installations.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Delete GitHub user connection",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Update the actor preference for the current user's GitHub connection.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Update GitHub user connection",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/github_app.UpdateUserConnectionRequest"
+                            }
+                        }
+                    },
+                    "description": "Update request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.UserConnectionStatus"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/install": {
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Generate a link to install the GitHub App for the current organization.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Get GitHub App install link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.InstallLinkResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/installations": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Return GitHub App installations linked to the current user from\nour database. This is a cache — it does not hit the GitHub API.\nUse POST /installations/refresh to force a fresh sync from GitHub.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "List GitHub App installations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/github_app.Installation"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/installations/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Trigger a live sync with GitHub for the current user's GitHub App\ninstallations. Upserts new installations, deletes stale ones, and\nreturns the refreshed list. Requires an existing GitHub connection.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Refresh GitHub App installations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/github_app.Installation"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/installations/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Remove a GitHub App installation link for the current user.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Delete a GitHub App installation",
+                "parameters": [
+                    {
+                        "description": "Installation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/installations/{id}/repos": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Return repositories accessible to the specified GitHub App installation.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "List repositories for a GitHub App installation",
+                "parameters": [
+                    {
+                        "description": "Installation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/github_app.Repository"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/tokens": {
+            "post": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Return a short-lived GitHub access token scoped to the given repository.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Request a GitHub access token",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/github_app.TokenRequest"
+                            }
+                        }
+                    },
+                    "description": "Token request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.UserTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/providers/github-app/webhooks": {
+            "post": {
+                "description": "Process GitHub App webhooks (installation lifecycle, installation_repositories). GitHub may deliver the same event more than once; handling re-applies the current repository-selection state and is safe to repeat.",
+                "tags": [
+                    "fleet github-app"
+                ],
+                "summary": "Handle GitHub App webhook events",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_app.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/usage/agents": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns the top agents in the workspace with cost data for the given time window. Defaults to sorting by cost descending; pass sort_by and sort_order to change. Data is sourced entirely from ClickHouse run metadata.",
+                "tags": [
+                    "fleet usage"
+                ],
+                "summary": "List fleet agents with usage",
+                "parameters": [
+                    {
+                        "description": "Max results (max 100)",
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "description": "Start of cost window (ISO8601)",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "End of cost window (ISO8601)",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort field (cost, runs, last_used, first_used)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "cost"
+                        }
+                    },
+                    {
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sort_order",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/usage.AgentUsageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.UserError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.InternalError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/usage/models": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns the top models used in the workspace with aggregated cost and distinct run counts for the given time window. Defaults to sorting by cost descending; pass sort_by and sort_order to change.",
+                "tags": [
+                    "fleet usage"
+                ],
+                "summary": "List fleet models with usage",
+                "parameters": [
+                    {
+                        "description": "Max results (max 100)",
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "description": "Start of window (ISO8601)",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "End of window (ISO8601)",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort field (cost, runs, last_used)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "cost"
+                        }
+                    },
+                    {
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sort_order",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/usage.ModelUsageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.UserError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.InternalError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/usage/tools": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns the top tools in the workspace with run counts, latency, and agent counts for the given time window. Defaults to sorting by runs descending; pass sort_by and sort_order to change.",
+                "tags": [
+                    "fleet usage"
+                ],
+                "summary": "List fleet tools with usage",
+                "parameters": [
+                    {
+                        "description": "Max results (max 100)",
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "description": "Start of window (ISO8601)",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "End of window (ISO8601)",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort field (runs, avg_latency_ms, agent_count, last_used)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "runs"
+                        }
+                    },
+                    {
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sort_order",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/usage.ToolUsageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.UserError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.InternalError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/fleet/usage/users": {
+            "get": {
+                "security": [
+                    {
+                        "API_Key": []
+                    },
+                    {
+                        "Tenant_ID": []
+                    },
+                    {
+                        "Bearer_Auth": []
+                    }
+                ],
+                "description": "Returns the top users with aggregated cost data for the given time window. Defaults to sorting by cost descending; pass sort_by and sort_order to change.",
+                "tags": [
+                    "fleet usage"
+                ],
+                "summary": "List fleet users with usage",
+                "parameters": [
+                    {
+                        "description": "Max results (max 100)",
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "description": "Start of cost window (ISO8601)",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "End of cost window (ISO8601)",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort field (cost, runs, agent_count, last_used, first_used)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "cost"
+                        }
+                    },
+                    {
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sort_order",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/usage.UserUsageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.UserError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errutil.InternalError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "/"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "errutil.InternalError": {
+                "type": "object"
+            },
+            "errutil.UserError": {
+                "type": "object"
+            },
+            "github_app.ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.InstallLinkResponse": {
+                "type": "object",
+                "properties": {
+                    "install_url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.Installation": {
+                "type": "object",
+                "properties": {
+                    "account_login": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "installation_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object"
+                    },
+                    "organization_id": {
+                        "type": "string"
+                    },
+                    "provider": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.Repository": {
+                "type": "object",
+                "properties": {
+                    "default_branch": {
+                        "type": "string"
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "html_url": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "private": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "github_app.TokenRequest": {
+                "type": "object",
+                "properties": {
+                    "repository": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.UpdateUserConnectionRequest": {
+                "type": "object",
+                "properties": {
+                    "actor_preference": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.UserAuthLinkResponse": {
+                "type": "object",
+                "properties": {
+                    "auth_url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.UserConnectionMetadata": {
+                "type": "object",
+                "properties": {
+                    "github_username": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.UserConnectionStatus": {
+                "type": "object",
+                "properties": {
+                    "actor_preference": {
+                        "type": "string"
+                    },
+                    "is_connected": {
+                        "type": "boolean"
+                    },
+                    "metadata": {
+                        "$ref": "#/components/schemas/github_app.UserConnectionMetadata"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "github_app.UserTokenResponse": {
+                "type": "object",
+                "properties": {
+                    "expires_at": {
+                        "type": "string"
+                    },
+                    "token": {
+                        "type": "string"
+                    },
+                    "token_type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "integrations.AuthMethod": {
+                "type": "object",
+                "properties": {
+                    "provider_match": {
+                        "$ref": "#/components/schemas/integrations.ProviderMatch"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/integrations.AuthType"
+                    }
+                }
+            },
+            "integrations.AuthType": {
+                "type": "string",
+                "enum": [
+                    "oauth2",
+                    "headers",
+                    "api_key",
+                    "none"
+                ],
+                "x-enum-varnames": [
+                    "AuthTypeOAuth2",
+                    "AuthTypeHeaders",
+                    "AuthTypeAPIKey",
+                    "AuthTypeNone"
+                ]
+            },
+            "integrations.CreateRequest": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "url"
+                ],
+                "properties": {
+                    "category": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "icon_url": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "integrations.ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "detail": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "integrations.Integration": {
+                "type": "object",
+                "properties": {
+                    "auth_methods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/integrations.AuthMethod"
+                        }
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "icon_url": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "transport": {
+                        "$ref": "#/components/schemas/integrations.Transport"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "integrations.ListResponse": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/integrations.Integration"
+                        }
+                    },
+                    "next_cursor": {
+                        "type": "string"
+                    }
+                }
+            },
+            "integrations.MatchBy": {
+                "type": "string",
+                "enum": [
+                    "kind",
+                    "id"
+                ],
+                "x-enum-varnames": [
+                    "MatchByKind",
+                    "MatchByID"
+                ]
+            },
+            "integrations.ProviderMatch": {
+                "type": "object",
+                "properties": {
+                    "by": {
+                        "$ref": "#/components/schemas/integrations.MatchBy"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "integrations.ReplaceAuthMethodsRequest": {
+                "type": "object",
+                "properties": {
+                    "auth_methods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/integrations.AuthMethod"
+                        }
+                    }
+                }
+            },
+            "integrations.Transport": {
+                "type": "string",
+                "enum": [
+                    "mcp_http"
+                ],
+                "x-enum-varnames": [
+                    "TransportMCPHTTP"
+                ]
+            },
+            "integrations.UpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "icon_url": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcp_servers.AuthType": {
+                "type": "string",
+                "enum": [
+                    "headers",
+                    "oauth"
+                ],
+                "x-enum-varnames": [
+                    "AuthTypeHeaders",
+                    "AuthTypeOAuth"
+                ]
+            },
+            "mcp_servers.CreateMcpServerPayload": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "url"
+                ],
+                "properties": {
+                    "auth_type": {
+                        "$ref": "#/components/schemas/mcp_servers.AuthType"
+                    },
+                    "external_system_id": {
+                        "type": "string"
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "oauth_mode": {
+                        "$ref": "#/components/schemas/mcp_servers.OAuthMode"
+                    },
+                    "oauth_provider_id": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "vendor_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcp_servers.McpServer": {
+                "type": "object",
+                "properties": {
+                    "auth_type": {
+                        "$ref": "#/components/schemas/mcp_servers.AuthType"
+                    },
+                    "can_invoke": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "external_system_id": {
+                        "type": "string"
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "mcp_vendor_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "oauth_mode": {
+                        "$ref": "#/components/schemas/mcp_servers.OAuthMode"
+                    },
+                    "oauth_provider_id": {
+                        "type": "string"
+                    },
+                    "tenant_id": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "vendor_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcp_servers.McpServerAPIError": {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcp_servers.OAuthMode": {
+                "type": "string",
+                "enum": [
+                    "legacy_shared_provider",
+                    "per_user_dynamic_client"
+                ],
+                "x-enum-varnames": [
+                    "OAuthModeLegacySharedProvider",
+                    "OAuthModePerUserDynamicClient"
+                ]
+            },
+            "mcp_servers.RegisterOAuthProviderPayload": {
+                "type": "object",
+                "properties": {
+                    "ls_user_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcp_servers.RegisterOAuthProviderResponse": {
+                "type": "object",
+                "properties": {
+                    "oauth_provider_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcp_servers.UpdateMcpServerPayload": {
+                "type": "object",
+                "properties": {
+                    "auth_type": {
+                        "$ref": "#/components/schemas/mcp_servers.AuthType"
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "oauth_provider_id": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcptools.ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "detail": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "mcptools.ListToolsResponse": {
+                "type": "object",
+                "properties": {
+                    "cached": {
+                        "type": "boolean"
+                    },
+                    "fetched_at": {
+                        "type": "string"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/mcptools.Tool"
+                        }
+                    }
+                }
+            },
+            "mcptools.Tool": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "inputSchema": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "usage.AgentUsage": {
+                "type": "object",
+                "properties": {
+                    "agent_name": {
+                        "type": "string"
+                    },
+                    "assistant_id": {
+                        "type": "string"
+                    },
+                    "first_used": {
+                        "type": "string"
+                    },
+                    "last_used": {
+                        "type": "string"
+                    },
+                    "model_name": {
+                        "type": "string"
+                    },
+                    "owner_email": {
+                        "type": "string"
+                    },
+                    "run_count": {
+                        "type": "integer"
+                    },
+                    "total_cost": {
+                        "type": "number"
+                    }
+                }
+            },
+            "usage.AgentUsageResponse": {
+                "type": "object",
+                "properties": {
+                    "agents": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/usage.AgentUsage"
+                        }
+                    }
+                }
+            },
+            "usage.ModelUsage": {
+                "type": "object",
+                "properties": {
+                    "last_used": {
+                        "type": "string"
+                    },
+                    "model_name": {
+                        "type": "string"
+                    },
+                    "run_count": {
+                        "type": "integer"
+                    },
+                    "total_cost": {
+                        "type": "number"
+                    }
+                }
+            },
+            "usage.ModelUsageResponse": {
+                "type": "object",
+                "properties": {
+                    "models": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/usage.ModelUsage"
+                        }
+                    }
+                }
+            },
+            "usage.ToolUsage": {
+                "type": "object",
+                "properties": {
+                    "agent_count": {
+                        "type": "integer"
+                    },
+                    "avg_latency_ms": {
+                        "type": "number"
+                    },
+                    "last_used": {
+                        "type": "string"
+                    },
+                    "run_count": {
+                        "type": "integer"
+                    },
+                    "tool_name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "usage.ToolUsageResponse": {
+                "type": "object",
+                "properties": {
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/usage.ToolUsage"
+                        }
+                    }
+                }
+            },
+            "usage.UserUsage": {
+                "type": "object",
+                "properties": {
+                    "agent_count": {
+                        "type": "integer"
+                    },
+                    "first_used": {
+                        "type": "string"
+                    },
+                    "last_used": {
+                        "type": "string"
+                    },
+                    "ls_user_id": {
+                        "type": "string"
+                    },
+                    "owner_email": {
+                        "type": "string"
+                    },
+                    "run_count": {
+                        "type": "integer"
+                    },
+                    "total_cost": {
+                        "type": "number"
+                    }
+                }
+            },
+            "usage.UserUsageResponse": {
+                "type": "object",
+                "properties": {
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/usage.UserUsage"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

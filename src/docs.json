@@ -979,7 +979,17 @@
                 "langsmith/fleet/code",
                 "langsmith/fleet/mcp-framework",
                 "langsmith/fleet/webhooks",
-                "langsmith/fleet/auth-format"
+                "langsmith/fleet/auth-format",
+                {
+                  "group": "Managed Deep Agents API",
+                  "pages": [
+                    "langsmith/fleet/managed-deep-agents-api-ref"
+                  ],
+                  "openapi": {
+                    "source": "langsmith/fleet/managed-deep-agents-openapi.json",
+                    "directory": "langsmith/fleet/managed-deep-agents-api"
+                  }
+                 }
               ]
             },
             {
