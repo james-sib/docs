@@ -398,7 +398,8 @@
                         "langsmith/data-export",
                         "langsmith/data-export-destinations",
                         "langsmith/data-export-monitor",
-                        "langsmith/data-export-downstream"
+                        "langsmith/data-export-downstream",
+                        "langsmith/big-query-bulk-export"
                       ]
                     }
                   ]
