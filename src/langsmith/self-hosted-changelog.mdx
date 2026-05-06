@@ -12,6 +12,748 @@ rss: true
 [Self-hosted LangSmith](/langsmith/self-hosted) is an add-on to the Enterprise plan designed for our largest, most security-conscious customers. For more details, refer to [Pricing](https://www.langchain.com/pricing). [Contact our sales team](https://www.langchain.com/contact-sales) if you want to get a license key to trial LangSmith in your environment.
 
 
+<Update label="2026-05-06" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.6
+
+- Fixed column width issue in automations table to enhance UI readability.
+- Improved run stats query performance by removing unnecessary joins.
+- Updated frontend with new evaluator template packs for enhanced evaluator management.
+- Improved playground UI by gating rendering on feature config loading state.
+- Added support for agent cost breakdown and user cost table in the fleet management interface.
+- Added new endpoints for querying and managing fleet-admin permissions.
+- Improved evaluator sorting and filtering options for better user experience.
+- Introduced new API endpoints to handle evaluator creation with specified sort options.
+- Enhanced security with URL allowlist enforcement for JWT injection in polly configuration.
+- Added support for evaluating created and updated dates in evaluator management.
+- Improved UI responsiveness and user experience for various frontend components.
+- Improved API performance by concurrent data writing and optimized latency checks.
+- Added organization members endpoint to manage workspace roles and permissions.
+- Enhanced security by adding forced mTLS support in database migrations.
+- Improved tracing project management with default groupBy setting on project selection.
+- Added support for new tools and integrations in agent builder configuration.
+- Fixed UI bugs and enhanced feedback functionality in sandbox and evaluator interfaces.
+- Improved layout and styling for various frontend elements in the tracing project interface.
+- Enhanced option settings in agent builder and new integrations setup wizard.
+- Enabled mobile-friendly login with PWA support for improved accessibility and user experience.
+- Improved session sync performance for faster data processing in background operations.
+- Added new endpoints for minting self-hosted licenses with JWT authentication.
+- Expanded messaging and profiler features with additional audit logging and metadata attributes.
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.6.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.6/langsmith-0.15.0-rc.6.tgz)
+</Update>
+
+<Update label="2026-05-05" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.5
+
+- Fixed truncation issue in 'Enabled' column of the automations table.
+- Bumped icon package and added icon variants in the frontend.
+- Updated details view header for improved UI.
+- Improved performance by removing dead joins from session stats queries.
+- Added back button on full page trace view for navigation.
+- Enhanced evaluator sorting and filtering options in the UI.
+- Made MCP server filter dropdown scrollable for better navigability.
+- Fixed file creation bug that cleared active interrupt state in fleet.
+- Added URL allowlist enforcement for JWT injections for improved security.
+- Added support for async agents in fleet to enhance operations.
+- Improved layout and functionality of sandbox proxy configurations.
+- Added evaluator feedback key and resource cell filtering for better usability.
+- Introduced several organizational and permission features, including fleet-admin:read permission for enhanced access control.
+- Enhanced evaluator table with new search and filtering options based on distinct fields like 'created by'.
+- Introduced trace-based tooltip enhancements on usage pages.
+- Fixed OAuth provider icon and naming mismatch issues.
+- Enhanced UI by allowing the detachment of run rules from the resources tab.
+- Enhanced performance by applying cache timeout updates.
+- Updated evaluator usability with edit warnings and UI consistency improvements.
+- Improved evaluator reuse functionality with UI refinements and bug fixes.
+- Improved agent cloning and run rule creation flows with enhanced error handling.
+- Enhanced tool usage and UI functionalities including tool usage tab and load tracing project names.
+- Added OAuth-related improvements for authentication and session backends.
+- Fixed Bug prior to addition of external endpoints for sensitive data access.
+- Improved sandbox and self-hosted deployment configurations by adding various features like ability for instance admin to restart backfill jobs.
+- Enhanced sandbox-related SSH support and environmental setup capabilities.
+- Enabled detailed logging and build improvements for CI/CD pipelines.
+- Improved tracing, rule, and run functionalities for clearer and smoother operation management.
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.5.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.5/langsmith-0.15.0-rc.5.tgz)
+</Update>
+
+<Update label="2026-05-04" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.4
+
+- Fixed the 'Enabled' column width in the automations table to prevent header truncation.
+- Improved evaluator details view header styling.
+- Enhanced performance by removing an unnecessary join from session stats queries.
+- Fixed an issue where the MCP server filter dropdowns were not scrollable.
+- Updated evaluator templates packs for better usability.
+- Introduced new API endpoints for run statistics insights and dashboards.
+- Added a new authentication feature to enforce URL allowlist for JWT injection.
+- Enabled sorting by 'Created At' and 'Updated At' in evaluators table.
+- Added new API endpoints for ABAC (attribute-based access control) to create sessions.
+- Improved evaluator details UX, including showing 'Feedback Key' in columns dropdown.
+- Enabled evaluator reuse and added a feedback banner for evaluator launch.
+- Added support for model GLM5 and Minimax 2.5.
+- Added the ability to detach run rules from resources in the UI.
+- Expanded support for Anthropic clients in tool call parsing.
+- Enhanced evaluator actions handling when creating issue board issues.
+- Redesigned memory tool rendering and approval UX for a smoother user experience.
+- Added support for GitHub OAuth user authentication flow and installation sync.
+- Introduced new API endpoints to manage audit logs and datasets.
+- Improved usage table design with tool icons and CSV export capability.
+- Enhanced models support with additions to the model pricing maps such as Claude Opus 4.7.
+- Fixed multiple UI bugs and improved frontend performance and rendering.
+- Improved SSO login and implemented mTLS support for migrations.
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.4.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.4/langsmith-0.15.0-rc.4.tgz)
+</Update>
+
+<Update label="2026-05-01" tags={["self-hosted"]}>
+## langsmith-0.14.5
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.14.5.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.14.5/langsmith-0.14.5.tgz)
+</Update>
+
+<Update label="2026-04-30" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.3
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.3.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.3/langsmith-0.15.0-rc.3.tgz)
+</Update>
+
+<Update label="2026-04-29" tags={["self-hosted"]}>
+## langsmith-0.14.3
+
+- Fixed decoding of OTLP/JSON traceId/spanId to use hex, improving integration with tracing tools.
+
+**Download the Helm chart:** [`langsmith-0.14.3.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.14.3/langsmith-0.14.3.tgz)
+</Update>
+
+<Update label="2026-04-24" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.2
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.2.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.2/langsmith-0.15.0-rc.2.tgz)
+</Update>
+
+<Update label="2026-04-24" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.1
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.1.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.1/langsmith-0.15.0-rc.1.tgz)
+</Update>
+
+<Update label="2026-04-20" tags={["self-hosted"]}>
+## langsmith-0.14.2
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.14.2.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.14.2/langsmith-0.14.2.tgz)
+</Update>
+
+<Update label="2026-04-20" tags={["self-hosted"]}>
+## langsmith-0.14.1
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.14.1.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.14.1/langsmith-0.14.1.tgz)
+</Update>
+
+<Update label="2026-04-20" tags={["self-hosted"]}>
+## langsmith-0.14.0
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.14.0.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.14.0/langsmith-0.14.0.tgz)
+</Update>
+
+<Update label="2026-04-17" tags={["self-hosted"]}>
+## langsmith-0.13.43
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.43.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.43/langsmith-0.13.43.tgz)
+</Update>
+
+<Update label="2026-04-15" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.10
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.10.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.10/langsmith-auth-proxy-0.0.10.tgz)
+</Update>
+
+<Update label="2026-04-14" tags={["self-hosted"]}>
+## langsmith-0.13.42
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.42.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.42/langsmith-0.13.42.tgz)
+</Update>
+
+<Update label="2026-04-14" tags={["self-hosted"]}>
+## langsmith-0.13.41
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.41.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.41/langsmith-0.13.41.tgz)
+</Update>
+
+<Update label="2026-04-09" tags={["self-hosted"]}>
+## langsmith-0.13.40
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.40.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.40/langsmith-0.13.40.tgz)
+</Update>
+
+<Update label="2026-04-07" tags={["self-hosted"]}>
+## langsmith-0.13.39
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.39.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.39/langsmith-0.13.39.tgz)
+</Update>
+
+<Update label="2026-04-03" tags={["self-hosted"]}>
+## langsmith-0.13.38
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.38.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.38/langsmith-0.13.38.tgz)
+</Update>
+
+<Update label="2026-04-01" tags={["self-hosted"]}>
+## langsmith-0.13.37
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.37.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.37/langsmith-0.13.37.tgz)
+</Update>
+
+<Update label="2026-03-30" tags={["self-hosted"]}>
+## langsmith-0.13.36
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.36.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.36/langsmith-0.13.36.tgz)
+</Update>
+
+<Update label="2026-03-27" tags={["self-hosted"]}>
+## langsmith-0.13.35
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.35.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.35/langsmith-0.13.35.tgz)
+</Update>
+
+<Update label="2026-03-27" tags={["self-hosted"]}>
+## langsmith-0.13.34
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.34.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.34/langsmith-0.13.34.tgz)
+</Update>
+
+<Update label="2026-03-27" tags={["self-hosted"]}>
+## langsmith-0.13.33
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.33.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.33/langsmith-0.13.33.tgz)
+</Update>
+
+<Update label="2026-03-27" tags={["self-hosted"]}>
+## langsmith-0.13.32
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.32.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.32/langsmith-0.13.32.tgz)
+</Update>
+
+<Update label="2026-03-24" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.9
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.9.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.9/langsmith-auth-proxy-0.0.9.tgz)
+</Update>
+
+<Update label="2026-03-23" tags={["self-hosted"]}>
+## langsmith-0.13.31
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.31.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.31/langsmith-0.13.31.tgz)
+</Update>
+
+<Update label="2026-03-23" tags={["self-hosted"]}>
+## langsmith-0.13.30
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.30.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.30/langsmith-0.13.30.tgz)
+</Update>
+
+<Update label="2026-03-21" tags={["self-hosted"]}>
+## langsmith-0.13.29
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.29.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.29/langsmith-0.13.29.tgz)
+</Update>
+
+<Update label="2026-03-21" tags={["self-hosted"]}>
+## langsmith-0.13.28
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.28.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.28/langsmith-0.13.28.tgz)
+</Update>
+
+<Update label="2026-03-20" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.8
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.8.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.8/langsmith-auth-proxy-0.0.8.tgz)
+</Update>
+
+<Update label="2026-03-18" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.7
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.7.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.7/langsmith-auth-proxy-0.0.7.tgz)
+</Update>
+
+<Update label="2026-03-18" tags={["self-hosted"]}>
+## langsmith-0.13.27
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.27.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.27/langsmith-0.13.27.tgz)
+</Update>
+
+<Update label="2026-03-17" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.6
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.6.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.6/langsmith-auth-proxy-0.0.6.tgz)
+</Update>
+
+<Update label="2026-03-16" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.5
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.5.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.5/langsmith-auth-proxy-0.0.5.tgz)
+</Update>
+
+<Update label="2026-03-15" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.4
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.4.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.4/langsmith-auth-proxy-0.0.4.tgz)
+</Update>
+
+<Update label="2026-03-13" tags={["self-hosted"]}>
+## langsmith-0.13.26
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.26.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.26/langsmith-0.13.26.tgz)
+</Update>
+
+<Update label="2026-03-12" tags={["self-hosted"]}>
+## langsmith-0.13.25
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.25.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.25/langsmith-0.13.25.tgz)
+</Update>
+
+<Update label="2026-03-10" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.3
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.3.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.3/langsmith-auth-proxy-0.0.3.tgz)
+</Update>
+
+<Update label="2026-03-10" tags={["self-hosted"]}>
+## langsmith-0.13.24
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.24.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.24/langsmith-0.13.24.tgz)
+</Update>
+
+<Update label="2026-03-07" tags={["self-hosted"]}>
+## langsmith-observability-0.2.0
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-observability-0.2.0.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-observability-0.2.0/langsmith-observability-0.2.0.tgz)
+</Update>
+
+<Update label="2026-03-07" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.2
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.2.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.2/langsmith-auth-proxy-0.0.2.tgz)
+</Update>
+
+<Update label="2026-03-07" tags={["self-hosted"]}>
+## langsmith-0.13.23
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.23.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.23/langsmith-0.13.23.tgz)
+</Update>
+
+<Update label="2026-03-06" tags={["self-hosted"]}>
+## langsmith-0.13.21
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.21.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.21/langsmith-0.13.21.tgz)
+</Update>
+
+<Update label="2026-03-06" tags={["self-hosted"]}>
+## langsmith-0.13.20
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.20.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.20/langsmith-0.13.20.tgz)
+</Update>
+
+<Update label="2026-03-06" tags={["self-hosted"]}>
+## langsmith-0.13.19
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.19.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.19/langsmith-0.13.19.tgz)
+</Update>
+
+<Update label="2026-03-05" tags={["self-hosted"]}>
+## langsmith-0.13.18
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.18.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.18/langsmith-0.13.18.tgz)
+</Update>
+
+<Update label="2026-03-03" tags={["self-hosted"]}>
+## langsmith-0.13.17
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.17.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.17/langsmith-0.13.17.tgz)
+</Update>
+
+<Update label="2026-02-26" tags={["self-hosted"]}>
+## langsmith-0.13.16
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.16.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.16/langsmith-0.13.16.tgz)
+</Update>
+
+<Update label="2026-02-26" tags={["self-hosted"]}>
+## langsmith-0.13.15
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.15.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.15/langsmith-0.13.15.tgz)
+</Update>
+
+<Update label="2026-02-24" tags={["self-hosted"]}>
+## langsmith-0.13.14
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.14.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.14/langsmith-0.13.14.tgz)
+</Update>
+
+<Update label="2026-02-17" tags={["self-hosted"]}>
+## langsmith-auth-proxy-0.0.1
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-auth-proxy-0.0.1.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-auth-proxy-0.0.1/langsmith-auth-proxy-0.0.1.tgz)
+</Update>
+
+<Update label="2026-02-14" tags={["self-hosted"]}>
+## langsmith-0.13.13
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.13.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.13/langsmith-0.13.13.tgz)
+</Update>
+
+<Update label="2026-02-12" tags={["self-hosted"]}>
+## langsmith-0.13.12
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.12.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.12/langsmith-0.13.12.tgz)
+</Update>
+
+<Update label="2026-02-12" tags={["self-hosted"]}>
+## langsmith-0.13.11
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.11.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.11/langsmith-0.13.11.tgz)
+</Update>
+
+<Update label="2026-02-10" tags={["self-hosted"]}>
+## langsmith-0.13.10
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.10.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.10/langsmith-0.13.10.tgz)
+</Update>
+
+<Update label="2026-02-09" tags={["self-hosted"]}>
+## langsmith-0.13.9
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.9.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.9/langsmith-0.13.9.tgz)
+</Update>
+
+<Update label="2026-02-06" tags={["self-hosted"]}>
+## langsmith-0.13.7
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.7.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.7/langsmith-0.13.7.tgz)
+</Update>
+
+<Update label="2026-02-05" tags={["self-hosted"]}>
+## langsmith-0.13.6
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.6.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.6/langsmith-0.13.6.tgz)
+</Update>
+
+<Update label="2026-02-05" tags={["self-hosted"]}>
+## langsmith-0.13.5
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.5.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.5/langsmith-0.13.5.tgz)
+</Update>
+
+<Update label="2026-02-04" tags={["self-hosted"]}>
+## langsmith-0.13.4
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.4.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.4/langsmith-0.13.4.tgz)
+</Update>
+
+<Update label="2026-01-26" tags={["self-hosted"]}>
+## langsmith-0.13.3
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.3.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.3/langsmith-0.13.3.tgz)
+</Update>
+
+<Update label="2026-01-21" tags={["self-hosted"]}>
+## langsmith-0.13.2
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.2.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.2/langsmith-0.13.2.tgz)
+</Update>
+
+<Update label="2026-01-16" tags={["self-hosted"]}>
+## langsmith-0.13.1
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.1.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.1/langsmith-0.13.1.tgz)
+</Update>
+
+<Update label="2026-01-16" tags={["self-hosted"]}>
+## langsmith-0.13.0
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.13.0.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.13.0/langsmith-0.13.0.tgz)
+</Update>
+
+<Update label="2026-01-12" tags={["self-hosted"]}>
+## langsmith-0.12.37
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.37.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.37/langsmith-0.12.37.tgz)
+</Update>
+
+<Update label="2026-01-09" tags={["self-hosted"]}>
+## langsmith-0.12.36
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.36.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.36/langsmith-0.12.36.tgz)
+</Update>
+
+<Update label="2026-01-08" tags={["self-hosted"]}>
+## langsmith-0.12.35
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.35.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.35/langsmith-0.12.35.tgz)
+</Update>
+
+<Update label="2025-12-26" tags={["self-hosted"]}>
+## langsmith-0.12.34
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.34.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.34/langsmith-0.12.34.tgz)
+</Update>
+
+<Update label="2025-12-20" tags={["self-hosted"]}>
+## langsmith-0.12.33
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.33.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.33/langsmith-0.12.33.tgz)
+</Update>
+
+<Update label="2025-12-12" tags={["self-hosted"]}>
+## langsmith-0.12.32
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.32.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.32/langsmith-0.12.32.tgz)
+</Update>
+
+<Update label="2025-12-11" tags={["self-hosted"]}>
+## langsmith-0.12.31
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.31.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.31/langsmith-0.12.31.tgz)
+</Update>
+
+<Update label="2025-12-09" tags={["self-hosted"]}>
+## langsmith-0.12.30
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.30.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.30/langsmith-0.12.30.tgz)
+</Update>
+
+<Update label="2025-12-08" tags={["self-hosted"]}>
+## langsmith-0.12.29
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.29.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.29/langsmith-0.12.29.tgz)
+</Update>
+
+<Update label="2025-12-05" tags={["self-hosted"]}>
+## langsmith-0.12.28
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.28.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.28/langsmith-0.12.28.tgz)
+</Update>
+
+<Update label="2025-12-04" tags={["self-hosted"]}>
+## langsmith-0.12.27
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.27.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.27/langsmith-0.12.27.tgz)
+</Update>
+
+<Update label="2025-12-02" tags={["self-hosted"]}>
+## langsmith-0.8.30
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.8.30.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.8.30/langsmith-0.8.30.tgz)
+</Update>
+
+<Update label="2025-12-01" tags={["self-hosted"]}>
+## langsmith-0.12.25
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.25.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.25/langsmith-0.12.25.tgz)
+</Update>
+
+<Update label="2025-11-27" tags={["self-hosted"]}>
+## langsmith-0.12.24
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.24.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.24/langsmith-0.12.24.tgz)
+</Update>
+
+<Update label="2025-11-26" tags={["self-hosted"]}>
+## langsmith-0.12.23
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.23.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.23/langsmith-0.12.23.tgz)
+</Update>
+
+<Update label="2025-11-26" tags={["self-hosted"]}>
+## langsmith-0.12.22
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.22.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.22/langsmith-0.12.22.tgz)
+</Update>
+
+<Update label="2025-11-26" tags={["self-hosted"]}>
+## langsmith-0.12.21
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.21.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.21/langsmith-0.12.21.tgz)
+</Update>
+
+<Update label="2025-11-24" tags={["self-hosted"]}>
+## langsmith-0.12.20
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.20.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.20/langsmith-0.12.20.tgz)
+</Update>
+
+<Update label="2025-11-24" tags={["self-hosted"]}>
+## langsmith-0.12.19
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.19.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.19/langsmith-0.12.19.tgz)
+</Update>
+
+<Update label="2025-11-20" tags={["self-hosted"]}>
+## langsmith-0.12.18
+
+- Internal improvements and maintenance updates
+
+**Download the Helm chart:** [`langsmith-0.12.18.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.12.18/langsmith-0.12.18.tgz)
+</Update>
+
 <Update label="2026-05-05" tags={["self-hosted"]}>
 ## langsmith-0.15.0-rc.5
 
