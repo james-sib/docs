@@ -62,6 +62,12 @@ In order to track progress of the backfill, you can view logs for your evaluator
 1. Optionally filter runs that you would like to apply your evaluator on or configure a sampling rate.
 1. Select **Apply Evaluator**.
 
+## Set a spend limit
+
+You can cap LLM cost on this evaluator's attachment per week. The workspace default applies unless a workspace admin sets a custom value in the **Spend limit** field under the **Advanced** section of the attachment. To remove an override and inherit the workspace default again, click **Reset to workspace default**. When weekly spend reaches the effective limit, LangSmith pauses enqueuing new batches for this attachment, and resumes once spend drops below the limit.
+
+For details, refer to [Track and limit evaluator spend](/langsmith/evaluator-spend).
+
 ## Configure the LLM-as-a-judge evaluator
 
 View [LLM-as-a-judge evaluators](/langsmith/llm-as-judge#evaluator-templates) for more information.

@@ -418,6 +418,7 @@
                   "group": "Feedback & evaluation",
                   "pages": [
                     "langsmith/evaluators",
+                    "langsmith/evaluator-spend",
                     "langsmith/attach-user-feedback",
                     "langsmith/presigned-feedback-tokens",
                     {

@@ -19,7 +19,10 @@ The evaluators table shows the following columns:
 | Name | The evaluator name |
 | Type | **LLM**, **Code**, or **Composite score**. Composite score evaluators are scoped to individual tracing projects and datasets and do not appear here. |
 | Feedback Key | The feedback key the evaluator produces |
-| Resources | Tracing projects and datasets this evaluator is attached to |
+| Projects & Datasets | Tracing projects and datasets this evaluator is attached to |
+| Run Count | Number of runs the evaluator has scored over the last 7 days |
+| Spend | Total LLM cost for the evaluator across all attached resources over the last 7 days. Sortable. Evaluators that do not call an LLM (for example, code evaluators) show no value. Refer to [Track and limit evaluator spend](/langsmith/evaluator-spend). |
+| Spend Status | **Under limits**, **N limit hit** (one or more attachments are paused at their weekly limit), or **Unlimited**. Refer to [Track and limit evaluator spend](/langsmith/evaluator-spend). |
 | Created By | The workspace member who created the evaluator |
 | Updated At | When the evaluator was last modified |
 | Created At | When the evaluator was created |
@@ -51,7 +54,7 @@ Click any evaluator in the table to open its detail view. The detail view has fo
 - **Overview**: The evaluator's feedback configuration and prompt or code definition.
 - **Traces**: Traces processed by this evaluator across all attached resources.
 - **Logs**: Execution logs for this evaluator across all attached resources.
-- **Resources**: The tracing projects and datasets this evaluator is attached to.
+- **Resources**: The tracing projects and datasets this evaluator is attached to, with each attachment's [weekly spend and limit](/langsmith/evaluator-spend).
 
 ## Edit an evaluator
 
