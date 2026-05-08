@@ -394,6 +394,7 @@
                     "langsmith/manage-trace",
                     "langsmith/export-traces",
                     "langsmith/query-threads",
+                    "langsmith/langsmith-remote-mcp",
                     "langsmith/langsmith-mcp-server",
                     {
                       "group": "Bulk export trace data",
