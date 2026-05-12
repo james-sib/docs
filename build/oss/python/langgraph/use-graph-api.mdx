@@ -902,7 +902,7 @@ Timed-out attempts do not commit their buffered writes. This prevents state upda
 The `timeout=` parameter on [`add_node`](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/add_node) caps how long a single async node attempt may run. Pass a number (seconds), a `timedelta`, or a [`TimeoutPolicy`](https://reference.langchain.com/python/langgraph/types/TimeoutPolicy) for finer control over run and idle timeouts. When the limit is exceeded, LangGraph raises [`NodeTimeoutError`](https://reference.langchain.com/python/langgraph/errors/NodeTimeoutError) and lets the retry policy decide whether to retry.
 
 <Note>
-Per-node timeouts require `langgraph>=1.2`, currently in alpha.
+Per-node timeouts require `langgraph>=1.2`.
 </Note>
 
 ```python
@@ -922,7 +922,7 @@ See [Fault tolerance](/oss/python/langgraph/fault-tolerance#timeouts) for the fu
 The `error_handler=` parameter on [`add_node`](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/add_node) registers a function that runs after a node fails and all retries are exhausted. The handler receives the current state and a typed [`NodeError`](https://reference.langchain.com/python/langgraph/errors/NodeError) with failure context, and can route to a recovery branch via [`Command`](https://reference.langchain.com/python/langgraph/types/Command):
 
 <Note>
-Node-level error handlers require `langgraph>=1.2`, currently in alpha.
+Node-level error handlers require `langgraph>=1.2`.
 </Note>
 
 ```python
@@ -1072,7 +1072,7 @@ def my_node(state: State, runtime: Runtime) -> State:
 | `drain_reason` | `str \| None` | The reason string passed to `request_drain()`, or `None` if drain was not requested. |
 
 <Note>
-Requires `langgraph>=1.2`, currently in alpha. See [Graceful shutdown](/oss/python/langgraph/durable-execution#graceful-shutdown) for the full `RunControl` API.
+Requires `langgraph>=1.2`. See [Graceful shutdown](/oss/python/langgraph/durable-execution#graceful-shutdown) for the full `RunControl` API.
 </Note>
 
 
