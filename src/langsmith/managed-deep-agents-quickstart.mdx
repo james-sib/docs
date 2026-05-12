@@ -1,10 +1,10 @@
 ---
-title: Headless Fleet quickstart
+title: Managed Deep Agents quickstart
 sidebarTitle: Quickstart
-description: "Create your first agent and run it through the Headless Fleet API."
+description: "Create your first agent and run it through the Managed Deep Agents API."
 ---
 
-In this quickstart, you'll authenticate against the Headless Fleet API, create an agent from code, and run it on a new thread.
+In this quickstart, you'll authenticate against the Managed Deep Agents API, create an agent from code, and run it on a new thread.
 
 ## Before you start
 
@@ -28,7 +28,7 @@ List the agents in your workspace to confirm authentication is working:
 
 ```shell
 curl --request GET \
-  --url {BASE_URL}/v1/fleet/agents \
+  --url {BASE_URL}/v1/deepagents/agents \
   --header '{HEADER_NAME}: LANGSMITH_API_KEY'
 ```
 
@@ -45,11 +45,11 @@ If the list is empty, you're ready to create your first agent.
 
 ## 3. Create your first agent
 
-Send a `POST` request to `/v1/fleet/agents` with a name and a basic configuration:
+Send a `POST` request to `/v1/deepagents/agents` with a name and a basic configuration:
 
 ```shell
 curl --request POST \
-  --url {BASE_URL}/v1/fleet/agents \
+  --url {BASE_URL}/v1/deepagents/agents \
   --header '{HEADER_NAME}: LANGSMITH_API_KEY' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -78,7 +78,7 @@ A thread holds the state of a conversation across one or more runs:
 
 ```shell
 curl --request POST \
-  --url {BASE_URL}/v1/fleet/threads \
+  --url {BASE_URL}/v1/deepagents/threads \
   --header '{HEADER_NAME}: LANGSMITH_API_KEY'
 ```
 
@@ -90,7 +90,7 @@ Stream a run on the thread, passing the `agent_id` from Step 3 and an `input` me
 
 ```shell
 curl --request POST \
-  --url {BASE_URL}/v1/fleet/threads/{THREAD_ID}/runs/stream \
+  --url {BASE_URL}/v1/deepagents/threads/{THREAD_ID}/runs/stream \
   --header '{HEADER_NAME}: LANGSMITH_API_KEY' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -106,7 +106,7 @@ The response streams events as the agent runs. When the stream completes, your a
 ## Next steps
 
 <CardGroup cols={2}>
-  <Card title="API reference" icon="book" href="/langsmith/fleet/headless-fleet-api-ref">
+  <Card title="API reference" icon="book" href="/langsmith/managed-deep-agents-api-ref">
     Browse all endpoints and request schemas.
   </Card>
 

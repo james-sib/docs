@@ -1,0 +1,43 @@
+---
+title: Managed Deep Agents API reference
+sidebarTitle: Overview
+description: "Reference for the Managed Deep Agents API for programmatic access to agents, threads, integrations, auth, skills, and triggers in LangSmith Fleet."
+---
+
+The Managed Deep Agents API is the programmatic interface to LangSmith Fleet. Use it to build custom UIs, integrate Fleet into existing applications, or manage agents from code. For example, you can build:
+
+- Agent products embedded in your existing application, with your own branding and authentication.
+- Internal tools and admin consoles for your engineers and operators.
+- Agent provisioning pipelines driven from infrastructure-as-code or CI.
+
+<Card title="Quickstart" icon="rocket" href="/langsmith/managed-deep-agents-quickstart">
+  Authenticate, create your first agent, and run it from code.
+</Card>
+
+<Info>
+  [Fleet](/langsmith/fleet) is the no-code product for building and running agents from a hosted UI. The Managed Deep Agents API exposes the same underlying platform as a set of REST endpoints. Resources created through Fleet are available through the API, and resources created through the API appear in the Fleet UI.
+</Info>
+
+Browse the full API reference in the **Managed Deep Agents API** section in the sidebar, or see the endpoint groups below:
+
+- [Agents](/langsmith/managed-deep-agents-api/agents): Configured graphs with their own files, configuration, and metadata
+- [Threads](/langsmith/managed-deep-agents-api/threads): Accumulated state of a conversation across one or more runs
+- [Skills](/langsmith/managed-deep-agents-api/skills): Reusable, versioned bundles of files that agents can load at runtime
+- [Integrations](/langsmith/managed-deep-agents-api/integrations): Third-party services available to your workspace, with one or more supported auth methods
+- [Auth providers](/langsmith/managed-deep-agents-api/auth-providers): OAuth providers that authorize connections on behalf of your users
+- [Auth sessions](/langsmith/managed-deep-agents-api/auth-sessions): In-flight OAuth flows that connect an end user to a provider
+- [Auth tokens](/langsmith/managed-deep-agents-api/auth-tokens): Connection tokens representing a user's authorized access to a third-party service
+- [Triggers](/langsmith/managed-deep-agents-api/triggers): Events that fire an agent on a schedule, an inbound message, or a webhook
+- [Trigger templates](/langsmith/managed-deep-agents-api/trigger-templates): Kinds of triggers available to your workspace, such as cron, webhook, and Slack bot
+
+## Base URL
+
+<Warning>**Stub pending confirmation from engineering.** Replace placeholders below before publishing.</Warning>
+
+The Managed Deep Agents API is served at `{BASE_URL}`. All endpoints are prefixed with `/v1/deepagents`.
+
+<Note>The Managed Deep Agents API is currently in `{RELEASE_STATUS}`. `{Description of support level, feature-flag requirements, and breaking-change policy.}`</Note>
+
+## Authentication
+
+Authentication is required for all Managed Deep Agents API requests. Include your LangSmith API key in the `{HEADER_NAME}` header on every request. To create one, follow the [Create an API key](/langsmith/create-account-api-key) guide.

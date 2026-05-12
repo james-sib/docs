@@ -910,6 +910,17 @@
                   "group": "LangSmith Deployment",
                   "pages": [
                   {
+                    "group": "Managed Deep Agents API",
+                    "pages": [
+                      "langsmith/managed-deep-agents-api-ref",
+                      "langsmith/managed-deep-agents-quickstart"
+                    ],
+                    "openapi": {
+                      "source": "langsmith/managed-deep-agents-openapi.json",
+                      "directory": "langsmith/managed-deep-agents-api"
+                    }
+                  },
+                  {
                     "group": "Agent Server API",
                     "pages": [
                       "langsmith/server-api-ref"
@@ -991,17 +1002,6 @@
                 "langsmith/fleet/webhooks",
                 "langsmith/fleet/auth-format"
               ]
-            },
-            {
-              "group": "Headless Fleet API",
-              "pages": [
-                "langsmith/fleet/headless-fleet-api-ref",
-                "langsmith/fleet/headless-fleet-quickstart"
-              ],
-              "openapi": {
-                "source": "langsmith/fleet/headless-fleet-openapi.json",
-                "directory": "langsmith/fleet/headless-fleet-api"
-              }
             },
             {
               "group": "Additional resources",
