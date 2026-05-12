@@ -282,14 +282,7 @@ for chunk in agent.stream(
 
 
 
-
 ##### Summarization Tool
-
-js
-<Note>
-The summarization tool middleware requires `deepagents>=1.6.0`.
-</Note>
-:::
 
 Deep agents include an optional [tool](/oss/python/langchain/tools) for summarization, enabling agents to trigger summarization at opportune times—such as between tasks—instead of at fixed token intervals.
 
@@ -317,7 +310,7 @@ Enabling this feature does not disable the default summarization action at 85% o
 
 See the [`SummarizationToolMiddleware`](https://reference.langchain.com/python/deepagents/middleware/summarization/SummarizationToolMiddleware) API reference for details.
 
-:::
+
 
 ## Context isolation with subagents
 

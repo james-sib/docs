@@ -289,39 +289,6 @@ for await (const [namespace, chunk] of await agent.stream(
 
 
 
-js
-<Note>
-The summarization tool middleware requires `deepagents>=1.6.0`.
-</Note>
-:::
-
-Deep agents include an optional [tool](/oss/javascript/langchain/tools) for summarization, enabling agents to trigger summarization at opportune times—such as between tasks—instead of at fixed token intervals.
-
-You can enable this tool by appending it to the middleware list:
-
-```python
-from deepagents import create_deep_agent
-from deepagents.backends import StateBackend
-from deepagents.middleware.summarization import (
-    create_summarization_tool_middleware,
-)
-
-backend = StateBackend  # if using default backend
-
-model = "google_genai:gemini-3.1-pro-preview"
-agent = create_deep_agent(
-    model=model,
-    middleware=[  # [!code highlight]
-        create_summarization_tool_middleware(model, backend),  # [!code highlight]
-    ],  # [!code highlight]
-)
-```
-
-Enabling this feature does not disable the default summarization action at 85% of the model's context limit.
-
-See the [`SummarizationToolMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSummarizationMiddleware) API reference for details.
-
-:::
 
 ## Context isolation with subagents
 
