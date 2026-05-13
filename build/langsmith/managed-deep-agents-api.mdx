@@ -1,0 +1,58 @@
+---
+title: Managed Deep Agents API
+sidebarTitle: Overview
+description: Reference overview for the Managed Deep Agents private preview API.
+icon: "api"
+tag: "PREVIEW"
+---
+
+The Managed Deep Agents API is a private preview API for creating, updating, and invoking Managed Deep Agents.
+
+<Note>
+    Managed Deep Agents is in private preview. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access. For usage guidance, see [Deploy Managed Deep Agents](/langsmith/deploy-managed-deep-agent).
+</Note>
+
+For an end-to-end workflow with request examples, see [Deploy Managed Deep Agents](/langsmith/deploy-managed-deep-agent).
+
+Browse the Managed Deep Agents API reference pages in the sidebar. The generated reference includes:
+
+- Agents: Create, list, get, update, and delete Managed Deep Agents.
+- Threads: Create, search, count, and inspect durable thread state.
+- Runs: Start and stream runs on Managed Deep Agent threads.
+- Credentials: Register credentials for MCP tools used by Managed Deep Agents.
+
+## Authentication
+
+Requests require a LangSmith API key for a workspace with Managed Deep Agents private preview access. Pass the key with each request:
+
+```txt
+X-Api-Key: <LANGSMITH_API_KEY>
+```
+
+## Base route
+
+The private preview API uses `/v1/deepagents`.
+
+## Resource groups
+
+| Resource group | Purpose |
+| --- | --- |
+| Agents | Create and manage Managed Deep Agent resources. |
+| Threads | Create and manage durable thread state for Managed Deep Agents. |
+| Runs | Start and stream Managed Deep Agent runs on threads. |
+| Credentials | Register credentials for MCP tools. |
+
+## Private preview scope
+
+Managed Deep Agents does not mirror every LangSmith Deployment endpoint in private preview. Non-LangGraph Platform (non-LGP) endpoint groups such as integrations, auth, triggers, skills, and sandboxes are not mirrored yet.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/managed-deep-agents-api.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

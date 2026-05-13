@@ -1,0 +1,5 @@
+<Note>
+**`@langchain/react`, `@langchain/vue`, `@langchain/svelte`, and `@langchain/angular` v1 is a breaking release.** The new `useStream` hook ships a v2-native streaming protocol that requires `langgraph-api>=0.9.0rc1` on the [LangGraph Agent Server](/langsmith/local-server). Upgrade with `pip install -U "langgraph-api>=0.9.0rc1"`, or run a recent `langgraph dev` from `langgraph-cli`.
+
+If you'd rather not upgrade the server yet, pin your frontend package to the pre-v1 release—`@langchain/react@0.3`, `@langchain/vue@0.4`, `@langchain/svelte@0.4`, or `@langchain/angular@0.4`—which talk to the legacy streaming protocol.
+</Note>
