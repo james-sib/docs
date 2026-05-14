@@ -13,6 +13,60 @@ rss: true
 
 
 <Update label="2026-05-14" tags={["self-hosted"]}>
+## langsmith-0.15.0-rc.13
+
+- Improved UI by widening the 'Enabled' column in the automations table to prevent header truncation.
+- Fixed issue where the 'next page' was not loading when scrolled to the bottom of the DataGrid.
+- Fixed an issue that prevented the file creation from clearing the active interrupt state in the Fleet section.
+- Added support for displaying agent name in the usage dashboard.
+- Fixed crash related to trace layout on the full page.
+- Improved evaluator templates and added feedback key and resource filters in the evaluators table.
+- Added new authentication feature with the introduction of a sorting option in the evaluators table by creation and update timestamps.
+- Improved the frontend by adding URL allowlist enforcement for JWT injection in Polly.
+- Fixed models to respect resource's application tags in evaluators.
+- Improved UI by adding feedback banner after evaluator reuse side panel closes.
+- Enhanced performance by removing dead run_stats_facets join from session stats queries.
+- Fixed console errors related to invalid imports within VSCode/TypeScript.
+- Added analytics tracking for templates/cards selections in the frontend.
+- Updated evaluator details page in the frontend with UX improvements.
+- Fixed layout issues associated with scrolling, metadata row in messages view, and responsive layout for feedback editor.
+- Improved evaluator table by adding onboarding empty state for resource-specific evaluator tables.
+- Introduced ability to fork evaluator UX and navigate to the new evaluator after forking.
+- Added more intuitive sorting capabilities in the global search feature on the frontend.
+- Fixed evaluator feedback submission via SDK-related issues.
+- Improved evaluator reuse UX and functionality for bulk evaluator deletion.
+- Enhanced evaluator tracing, groupBy functionality, and evaluator reuse restrictions.
+- Enabled more dynamic loading for resources tab when detaching run rules.
+- Added support for sourcing session ID in threads.
+- Fixed GitHub SSO authentication and authorization challenges.
+- Fixed default selection for threading group-by in tracing projects.
+- Added per-trace summaries to issue boards.
+- Improved session and infrastructure support by enabling ClickHouse metrics collection.
+- Introduced various fixes related to OAuth, evaluator actions, GitHub App installations, and agent usage dashboard metrics.
+- Improved caching strategy for session enrichment with attention to heavy tenants.
+- Introduced enhancements in agentifier for Fleet architecture with new skills and capabilities.
+- Improved performance for the tracking and logging of agent-related run flow, messaging view processing, and self-hosted infrastructure deployment.
+- Enabled audit logging for accessing sensitive data endpoints.
+- Enhanced trace view with a functional JSON/CSV UI toggle.
+- Enhanced experience by aggregating usage and spending statistics across tracing projects.
+- Added more efficient performance practices for datasets by enriching comparison run costs from ClickHouse.
+- Fixed PostgreSQL TLS-related migration issues with system root certs.
+- Enhanced mobile-friendly UI for login and PWA installabilities.
+- Enabled more stringent dark mode gradient UI consistency.
+- Improved backend connectivity with mTLS support for Clickhouse migrations.
+- Enhanced credential security and API key uses.
+- Improved message processing in DS with `latency_ms` response on tool calls.
+- Fixed tracing project naming errors and UID bugs.
+- Enhanced issues handling with distinction between user and agent introduced errors.
+- Enhanced performance for automating debugging using audit logs and persistent error boundaries.
+- Implemented improvements in GitHub OAuth installations and feature cascades for workflows.
+
+These changes are expected to provide a more stable, responsive, and feature-rich experience for LangSmith self-hosted customers.
+
+**Download the Helm chart:** [`langsmith-0.15.0-rc.13.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.15.0-rc.13/langsmith-0.15.0-rc.13.tgz)
+</Update>
+
+<Update label="2026-05-14" tags={["self-hosted"]}>
 ## langsmith-0.14.6
 
 - Fixed an issue with S3 CopyObject KMS headers to ensure proper integration and functionality.
