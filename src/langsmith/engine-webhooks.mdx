@@ -171,6 +171,67 @@ Use the example body from [`issue.created`](#issue-created) as `sample-issue-cre
 - The handler persists the event keyed by its `id` so retries are deduped.
 - The handler returns `2xx` before kicking off slow downstream work.
 
+## Post events to a Slack channel
+
+Slack [Incoming Webhooks](https://api.slack.com/messaging/webhooks) accept a different JSON schema than LangSmith Engine events, so you cannot point a subscription directly at a Slack webhook URL. Instead, run a small receiver that transforms the [event envelope](#event-envelope) into a Slack message and forwards it on.
+
+<Steps>
+  <Step title="Create a Slack incoming webhook">
+    In your Slack workspace, create an [incoming webhook](https://api.slack.com/messaging/webhooks) for the channel you want to notify and copy the generated webhook URL. Store it as the `SLACK_WEBHOOK_URL` environment variable on your receiver.
+  </Step>
+  <Step title="Run a receiver that transforms events">
+    The following FastAPI handler accepts an Engine webhook delivery, verifies the shared secret, formats the issue for Slack, and posts it to the channel.
+
+    ```python
+    import os
+
+    import httpx
+    from fastapi import FastAPI, Header, HTTPException, Request
+
+    app = FastAPI()
+
+    SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
+    WEBHOOK_SECRET = os.environ["WEBHOOK_SECRET"]
+
+    SEVERITY_LABELS = {0: ":rotating_light: Urgent", 1: ":warning: High", 2: "Medium", 3: "Low"}
+
+    @app.post("/langsmith-webhook")
+    async def receive(request: Request, authorization: str = Header(default="")):
+        if authorization != f"Bearer {WEBHOOK_SECRET}":
+            raise HTTPException(status_code=401, detail="invalid token")
+
+        event = await request.json()
+        issue = event["data"]["object"]
+        severity = SEVERITY_LABELS.get(issue["severity"], str(issue["severity"]))
+
+        if event["type"] == "issue.created":
+            header = f"*New LangSmith issue* in `{issue['session_name']}`"
+        elif event["type"] == "issue.trace.added":
+            header = f"*New trace linked* to issue in `{issue['session_name']}`"
+        else:
+            return {"ok": True}
+
+        message = {
+            "text": f"{header}\n*{issue['name']}* ({severity})\n{issue['description']}\n<{issue['url']}|View in LangSmith>",
+        }
+
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(SLACK_WEBHOOK_URL, json=message)
+            response.raise_for_status()
+
+        return {"ok": True}
+    ```
+
+    The handler acknowledges immediately after posting to Slack. For high-volume projects, persist the event keyed by its `id` and move the Slack call to a background queue so the response stays within the 20-second [delivery](#delivery) timeout.
+  </Step>
+  <Step title="Subscribe the receiver">
+    In **Engine Settings**, add a webhook subscription pointing at your receiver's public URL (for example, `https://example.com/langsmith-webhook`). Add an `Authorization: Bearer <WEBHOOK_SECRET>` [custom header](#custom-headers) so the receiver can verify the caller, and choose the [event types](#event-types) and [severity threshold](#severity-filtering) you want to forward.
+  </Step>
+  <Step title="Coalesce batched events (optional)">
+    A single upstream action can produce one `issue.created` event followed by several `issue.trace.added` events that share the same `request_id`. To collapse these into a single Slack message, buffer events by `request_id` for a few seconds before posting. See [Batch coalescing](#batch-coalescing).
+  </Step>
+</Steps>
+
 ## Security
 
 - Webhook URLs are validated when the subscription is created and again at delivery time. Private and metadata IP ranges are blocked in SaaS. Both `http://` and `https://` are accepted; use `https://` so the payload and any custom headers are not sent in cleartext.
