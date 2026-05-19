@@ -11,18 +11,18 @@ rss: true
 
 
 <Update label="May 12, 2026" tags={["deepagents"]} rss={{ title: "May 12, 2026 - langchain" }}>
-    ## `deepagents` v0.6.0
+    ## `deepagents` v0.6
 
     - **[`CodeInterpreterMiddleware`](/oss/deepagents/interpreters)**: (experimental) `deepagents` now supports code execution and programmatic tool calling through a scoped QuickJS runtime.
     - Supports `version="v3"` in `stream_events` / `astream_events`. Refer to the [event streaming](/oss/deepagents/event-streaming) guide for details.
 </Update>
 <Update label="May 12, 2026" tags={["langchain"]} rss={{ title: "May 12, 2026 - langchain" }}>
-    ## `langchain` v1.3.0
+    ## `langchain` v1.3
 
     This release adds support for `version="v3"` in `stream_events` / `astream_events` for `langchain` agents. Refer to the [event streaming](/oss/langchain/event-streaming) guide for details.
 </Update>
 <Update label="May 12, 2026" tags={["langgraph"]} rss={{ title: "May 12, 2026 - langgraph" }}>
-    ## `langgraph` v1.2.0
+    ## `langgraph` v1.2
 
     This release adds finer-grained control over node execution (timeouts, error recovery, and graceful shutdown), a new channel type that cuts checkpoint overhead for long-running threads, and a new content-block-centric streaming API (v3) with typed, per-channel projections.
 
@@ -39,7 +39,7 @@ rss: true
     Timeouts and error handlers are Python-only; retry policies continue to work in both Python and TypeScript.
 </Update>
 <Update label="Apr 7, 2026" tags={["deepagents"]} rss={{ title: "Apr 7, 2026 - deepagents" }}>
-    ## `deepagents` v0.5.0
+    ## `deepagents` v0.5
 
     - **[Async subagents](/oss/deepagents/async-subagents)**: Deep Agents can launch non-blocking background tasks, so users can continue interacting with the agent while subagents work concurrently. Requires [LangSmith Deployment](/langsmith/deployment) for sub-agents.
 
@@ -53,7 +53,7 @@ rss: true
     - **Anthropic prompt caching improvements**: We've made some improvements to improve prompt caching performance for Anthropic models.
 </Update>
 <Update label="Mar 10, 2026" tags={["langgraph"]} rss={{ title: "Mar 10, 2026 - langgraph" }}>
-    ## `langgraph` v1.1.0
+    ## `langgraph` v1.1
 
     - **Type-safe streaming (`version="v2"`)**: Pass `version="v2"` to `stream()` / `astream()` for unified `StreamPart` output with `type`, `ns`, and `data` keys on every chunk. Each mode has its own `TypedDict`, all importable from `langgraph.types`. See [streaming docs](/oss/langgraph/streaming#stream-output-format-v2).
 
@@ -66,7 +66,7 @@ rss: true
     - **Fully backwards compatible**: `version="v2"` is opt-in. `GraphOutput` supports deprecated dict-style access for gradual migration.
 </Update>
 <Update label="Feb 10, 2026" tags={["deepagents"]} rss={{ title: "Feb 10, 2026 - deepagents" }}>
-    ## `deepagents` v0.4.0
+    ## `deepagents` v0.4
 
     * New integration packages for pluggable sandboxes: [`langchain-modal`](https://pypi.org/project/langchain-modal/), [`langchain-daytona`](https://pypi.org/project/langchain-daytona/), and [`langchain-runloop`](https://pypi.org/project/langchain-runloop/). See [sandboxes guide](/oss/deepagents/sandboxes) and example [data analysis tutorial](/oss/deepagents/data-analysis).
     * Changes to [conversation history summarization](/oss/deepagents/context-engineering#summarization):
@@ -92,7 +92,7 @@ rss: true
         </Accordion>
 </Update>
 <Update label="Dec 15, 2025" tags={["langchain", "integrations"]} rss={{ title: "Dec 15, 2025 - langchain" }}>
-    ## `langchain` v1.2.0
+    ## `langchain` v1.2
 
     * [`create_agent`](/oss/langchain/agents): Simplified support for provider-specific tool parameters and definitions via a new [`extras`](https://reference.langchain.com/python/langchain/tools/#langchain.tools.BaseTool.extras) attribute on [tools](/oss/langchain/tools). Examples:
       * Provider-specific configuration such as Anthropic's [programmatic tool calling](/oss/integrations/chat/anthropic#programmatic-tool-calling) and [tool search](/oss/integrations/chat/anthropic#tool-search).
@@ -100,14 +100,14 @@ rss: true
     * Support for strict schema-adherence in agent `response_format` (see [`ProviderStrategy`](/oss/langchain/structured-output#provider-strategy) docs).
 </Update>
 <Update label="Dec 8, 2025" tags={["langchain", "integrations"]} rss={{ title: "Dec 8, 2025 - langchain" }}>
-    ## `langchain-google-genai` v4.0.0
+    ## `langchain-google-genai` v4.0
 
     We've re-written the Google GenAI integration to use Google's consolidated Generative AI SDK, which provides access to the Gemini API and Vertex AI Platform under the same interface. This includes minimal breaking changes as well as deprecated packages in `langchain-google-vertexai`.
 
     See the full [release notes and migration guide](https://github.com/langchain-ai/langchain-google/discussions/1422) for details.
 </Update>
 <Update label="Nov 25, 2025" tags={["langchain"]} rss={{ title: "Nov 25, 2025 - langchain" }}>
-    ## `langchain` v1.1.0
+    ## `langchain` v1.1
 
     * [Model profiles](/oss/langchain/models#model-profiles): Chat models now expose supported features and capabilities through a `.profile` attribute. These data are derived from [models.dev](https://models.dev), an open source project providing model capability data.
     * [Summarization middleware](/oss/langchain/middleware/built-in#summarization): Updated to support flexible trigger points using model profiles for context-aware summarization.
@@ -117,7 +117,7 @@ rss: true
     * [Content moderation middleware](/oss/integrations/middleware/openai#content-moderation): OpenAI content moderation middleware for detecting and handling unsafe content in agent interactions. Supports checking user input, model output, and tool results.
 </Update>
 <Update label="Oct 20, 2025" tags={["langchain", "langgraph"]} rss={{ title: "Oct 20, 2025 - langchain" }}>
-    ## v1.0.0
+    ## v1.0
 
     ### `langchain`
     * [Release notes](/oss/releases/langchain-v1)

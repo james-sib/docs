@@ -23,7 +23,7 @@ rss: true
       - **Backward compatible**: Existing v1 backends can be adapted to the v2 interface using `adaptBackendProtocol`. The v1 interfaces (`BackendProtocolV1`, `SandboxBackendProtocolV1`) are deprecated but retained for compatibility.
 </Update>
 <Update label="Jan 14, 2026" tags={["langgraph"]} rss={{ title: "Jan 14, 2026 - langgraph" }}>
-    ## v1.1.0
+    ## v1.1
 
     ### `@langchain/langgraph`
 
@@ -96,7 +96,7 @@ rss: true
     </Card>
 </Update>
 <Update label="Dec 12, 2025" tags={["langchain", "@langchain/openai", "@langchain/anthropic", "@langchain/ollama", "@langchain/community", "@langchain/xai", "@langchain/tavily", "@langchain/mongodb", "@langchain/mcp-adapters", "@langchain/google-common", "@langchain/core"]} rss={{ title: "Dec 12, 2025 - langchain" }}>
-    ## v1.2.0
+    ## v1.2
     ### `langchain`
     * [Structured output](/oss/langchain/structured-output): Added ability to manually set `strict` mode when using `providerStrategy` for structured output.
 
@@ -105,17 +105,17 @@ rss: true
     * **Content moderation:** New `moderateContent` option on `ChatOpenAI` for detecting and handling unsafe content.
     * Prefer responses API for GPT-5.2 Pro model.
 
-    ## v1.3.0
+    ## v1.3
     ### `@langchain/anthropic`
     * **New provider built-in tools:** Support for text editor, web fetch, computer use, tool search, and MCP toolset tools executed server-side by the provider. See [Server-side tool use](/oss/langchain/tools#server-side-tool-use) and the [Anthropic](/oss/integrations/chat/anthropic) chat integration.
     * Exposed `ChatAnthropicInput` type for improved type safety.
 
-    ## v1.1.0
+    ## v1.1
     ### `@langchain/ollama`
     * **Native structured outputs:** Added support for native structured output via `withStructuredOutput`.
     * Support for custom `baseUrl` configuration.
 
-    ## v1.0.0
+    ## v1.0
     ### `@langchain/community`
     * Jira document loader updated to use v3 API.
     * LanceDB: Added `similaritySearch()` and `similaritySearchWithScore()` support.
@@ -132,7 +132,7 @@ rss: true
     * **@langchain/core:** Security fixes, better subgraph nesting in Mermaid graphs, UUID7 for run IDs.
 </Update>
 <Update label="Nov 25, 2025" tags={["langchain"]} rss={{ title: "Nov 25, 2025 - langchain" }}>
-    ## v1.1.0
+    ## v1.1
 
     * [Model profiles](/oss/langchain/models#model-profiles): Chat models now expose supported features and capabilities through a `.profile` getter. These data are derived from [models.dev](https://models.dev), an open source project providing model capability data.
     * [Model retry middleware](/oss/langchain/middleware/built-in#model-retry): New middleware for automatically retrying failed model calls with configurable exponential backoff, improving agent reliability.
@@ -144,7 +144,7 @@ rss: true
     * **Compatibility improvements:** Fixed error handling for Zod v4 validation errors in structured output and tool schemas, ensuring detailed error messages are properly displayed.
 </Update>
 <Update label="Oct 20, 2025" tags={["langchain", "langgraph"]} rss={{ title: "Oct 20, 2025 - langchain" }}>
-    ## v1.0.0
+    ## v1.0
 
     ### `langchain`
     * [Release notes](/oss/releases/langchain-v1)
