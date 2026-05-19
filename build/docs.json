@@ -348,6 +348,13 @@
                         "langsmith/upload-files-with-traces"
                       ]
                     },
+                    {
+                      "group": "Messages view",
+                      "pages": [
+                        "langsmith/messages-view-integrations",
+                        "langsmith/messages-view-trace-format"
+                      ]
+                    },
                     "langsmith/threads"
                   ]
                 },
@@ -394,6 +401,7 @@
                 {
                   "group": "Viewing & managing traces",
                   "pages": [
+                    "langsmith/view-traces",
                     "langsmith/filter-traces-in-application",
                     "langsmith/configure-input-output-preview",
                     "langsmith/manage-trace",
