@@ -11,6 +11,8 @@ import ToolReturnCommandJs from '/snippets/code-samples/tool-return-command-js.m
 import ToolUpdateStatePy from '/snippets/code-samples/tool-update-state-py.mdx';
 import ToolErrorHandlingPy from '/snippets/code-samples/tool-error-handling-py.mdx';
 import ToolErrorHandlingJs from '/snippets/code-samples/tool-error-handling-js.mdx';
+import ToolRuntimeContextThreadJs from '/snippets/code-samples/tool-runtime-context-thread-js.mdx';
+import ToolRuntimeContextThreadPy from '/snippets/code-samples/tool-runtime-context-thread-py.mdx';
 
 Tools extend what [agents](/oss/javascript/langchain/agents) can do—letting them fetch real-time data, execute code, query external databases, and take actions in the world.
 
@@ -67,45 +69,15 @@ Tools are most powerful when they can access runtime information like conversati
 
 Context provides immutable configuration data that is passed at invocation time. Use it for user IDs, session details, or application-specific settings that shouldn't change during a conversation.
 
+<Note>
+While `thread_id` (passed via `config={"configurable": {"thread_id": ...}}`) scopes the *conversation*: message history and checkpoints, `context` carries *per-run* data your tools and middleware read at invocation time. In production you typically pass both together: a stable `thread_id` per conversation, and a `context` object on every invoke.
+</Note>
 
 
-Tools can access an agent's runtime context through the `config` parameter:
 
-```ts
-import * as z from "zod"
-import { ChatOpenAI } from "@langchain/openai"
-import { createAgent } from "langchain"
+Tools can access an agent's runtime context through the `config` parameter. Pass `context` alongside a `thread_id` so the conversation is persisted across turns:
 
-const getUserName = tool(
-  (_, config) => {
-    return config.context.user_name
-  },
-  {
-    name: "get_user_name",
-    description: "Get the user's name.",
-    schema: z.object({}),
-  }
-);
-
-const contextSchema = z.object({
-  user_name: z.string(),
-});
-
-const agent = createAgent({
-  model: new ChatOpenAI({ model: "gpt-5.4" }),
-  tools: [getUserName],
-  contextSchema,
-});
-
-const result = await agent.invoke(
-  {
-    messages: [{ role: "user", content: "What is my name?" }]
-  },
-  {
-    context: { user_name: "John Smith" }
-  }
-);
-```
+<ToolRuntimeContextThreadJs />
 
 
 
