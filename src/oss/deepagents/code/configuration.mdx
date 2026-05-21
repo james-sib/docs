@@ -455,6 +455,27 @@ When the environment variable is set, it takes precedence over the config file v
 
 ---
 
+## Interpreter
+
+Set `[interpreter]` keys in `~/.deepagents/config.toml` to enable the `js_eval` JavaScript interpreter middleware on every session and configure its runtime limits and PTC allowlist:
+
+```toml
+[interpreter]
+enable_interpreter = true
+ptc = "safe"
+timeout_seconds = 5.0
+memory_limit_mb = 64
+max_ptc_calls = 256
+max_result_chars = 4000
+ptc_acknowledge_unsafe = false
+```
+
+The CLI flags `--interpreter` and `--interpreter-tools` override the matching keys for a single session. The interpreter is local-mode only and requires the `quickjs` optional extra.
+
+For the full configuration reference, the `safe` / `all` PTC presets, and the HITL trade-off, see [Interpreter](/oss/deepagents/code/interpreter).
+
+---
+
 ## Themes
 
 Use `/theme` to open an interactive theme selector. Navigate the list to preview themes in real-time, press `Enter` to persist your choice to `config.toml`.

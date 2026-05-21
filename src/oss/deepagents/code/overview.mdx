@@ -97,6 +97,7 @@ Deep Agents Code has the following built-in capabilities:
 * <Icon icon="user" size={16} /> **Human-in-the-loop** - require human approval for sensitive tool operations.
 * <Icon icon="puzzle" size={16} /> **[Skills](/oss/deepagents/code/memory-and-skills#skills)** - extend agent capabilities with custom expertise and instructions.
 * <Icon icon="plug" size={16} /> **[MCP tools](/oss/deepagents/code/mcp-tools)** - load external tools from [Model Context Protocol](https://modelcontextprotocol.io/) servers.
+* <Icon icon="code" size={16} /> **[JavaScript interpreter](/oss/deepagents/code/interpreter)** - opt-in `js_eval` REPL backed by QuickJS, with an optional programmatic tool-calling allowlist for host tools. Local mode only; requires the `quickjs` extra.
 * <Icon icon="chart-dots" size={16} /> **[Tracing](/oss/deepagents/code/overview#trace-with-langsmith)** - trace agent operations in LangSmith for observability and debugging.
 
 <Accordion title="Full list of built-in tools">
@@ -119,6 +120,7 @@ Deep Agents Code has the following built-in capabilities:
     | `ask_user` | Ask the user free-form or multiple-choice questions | - |
     | `compact_conversation` | Summarize older messages, offload originals to backend storage, and replace them in context with the summary | Mixed<sup>2</sup> |
     | `write_todos` | Create and manage task lists for complex work | - |
+    | `js_eval` | Run JavaScript in a persistent QuickJS REPL with optional programmatic tool calling. Available only when launched with `--interpreter` (see [Interpreter](/oss/deepagents/code/interpreter)) | - |
 
     <sup>1</sup>: Potentially destructive operations require user approval before execution. To bypass human approval, you can toggle auto-approve (shift+tab) or start with the option:
 
@@ -189,6 +191,8 @@ dcode --startup-cmd "git diff --stat" -n "Review these changes"
         | `--mcp-config PATH`    | Add an explicit MCP config as the highest-precedence source (merged with auto-discovered configs) |
         | `--no-mcp`             | Disable all MCP tool loading                                |
         | `--trust-project-mcp`  | Trust project-level MCP configs with stdio servers (skip approval prompt) |
+        | `--interpreter`        | Enable the `js_eval` JavaScript interpreter middleware on the main agent. Local mode only; requires the `quickjs` extra. See [Interpreter](/oss/deepagents/code/interpreter) |
+        | `--interpreter-tools VALUE` | PTC allowlist for `js_eval`: `safe`, `all`, or a comma-separated list of tool names. Defaults to no PTC (pure REPL) |
         | `--profile-override JSON` | Override model profile fields as a JSON string (e.g., `'{"max_input_tokens": 4096}'`). Merged on top of config file profile overrides |
         | `--acp`                | Run as an ACP server over stdio instead of launching the interactive UI |
         | `-v`, `--version`      | Display version                                             |

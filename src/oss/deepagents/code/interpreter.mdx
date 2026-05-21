@@ -1,0 +1,202 @@
+---
+title: Use the JavaScript interpreter
+sidebarTitle: Interpreter
+description: Enable the js_eval interpreter middleware in Deep Agents Code with --interpreter, configure PTC allowlists, and set runtime limits via config.toml
+---
+
+Deep Agents Code can wire the [`CodeInterpreterMiddleware`](/oss/deepagents/interpreters) from `langchain-quickjs` into the main agent as an opt-in middleware. When enabled, the agent gains a `js_eval` tool that runs JavaScript in an embedded [QuickJS](https://github.com/quickjs-ng/quickjs) runtime, with optional programmatic tool calling (PTC) into the host toolset.
+
+For background on what an interpreter is and how `js_eval` differs from normal tool calls, see [Interpreters](/oss/deepagents/interpreters).
+
+<Note>
+    The interpreter requires the `quickjs` optional extra (`langchain-quickjs>=0.1.2,<0.2.0`). It is not included in the default install or in the `all-providers` / `all-sandboxes` meta-extras.
+</Note>
+
+<Warning>
+    The interpreter is **local-mode only** in this release. Pairing `--interpreter` with `--sandbox <provider>` raises a startup error. Splitting tool execution between a remote sandbox and a local REPL would defeat the sandbox trust boundary, so the two are mutually exclusive.
+</Warning>
+
+## Install the extra
+
+<CodeGroup>
+```bash uv
+uv tool install 'deepagents-code[quickjs]'
+```
+
+```bash pip
+pip install 'deepagents-code[quickjs]'
+```
+</CodeGroup>
+
+If you launch `dcode --interpreter` without the extra installed, Deep Agents Code prints an actionable error and exits before starting the server:
+
+```txt
+Error: Missing dependencies for --interpreter. Install with: pip install 'deepagents-code[quickjs]'
+```
+
+## Enable the interpreter
+
+The `--interpreter` flag wires `CodeInterpreterMiddleware` (with `tool_name="js_eval"`) into the main agent for the duration of the session. Subagents do not receive the interpreter in this release.
+
+```bash
+dcode --interpreter
+```
+
+The model can now call the `js_eval` tool to run JavaScript:
+
+```javascript
+const rows = [
+  { team: "alpha", score: 8 },
+  { team: "beta", score: 13 },
+  { team: "alpha", score: 21 },
+];
+
+const totals = rows.reduce((acc, row) => {
+  acc[row.team] = (acc[row.team] ?? 0) + row.score;
+  return acc;
+}, {});
+
+totals;
+```
+
+By default, the interpreter is a pure REPL: no host tools are exposed inside the runtime. To call Deep Agents Code tools (`read_file`, `task`, `web_search`, etc.) from inside `js_eval`, enable [programmatic tool calling](#programmatic-tool-calling-ptc).
+
+## Programmatic tool calling (PTC)
+
+PTC exposes selected Deep Agents Code tools inside the interpreter under the `tools.*` namespace as async JavaScript functions. The agent can then write code that loops, branches, retries, or parallelizes tool calls without round-tripping each result through the model context. See [Programmatic tool calling](/oss/deepagents/interpreters#programmatic-tool-calling) for the underlying mechanism.
+
+<Warning>
+    PTC invocations execute through the interpreter bridge and **do not** go through the normal tool-calling path. As a result, `interrupt_on` / human-in-the-loop approval is not enforced for tools called as `tools.*` from inside `js_eval`. Treat the PTC allowlist as the only effective control over what `js_eval` can do to the host.
+</Warning>
+
+`js_eval` itself is intentionally not gated by HITL. Per-call approval would be unusably noisy and would not block PTC fan-out anyway, so the right place to enforce safety is the allowlist.
+
+### CLI: `--interpreter-tools`
+
+Pass `--interpreter-tools` to control the allowlist. The flag accepts one of three values:
+
+| Value | Meaning |
+|---|---|
+| `safe` | Expose the curated read-only preset (`read_file`, `glob`, `grep`) intersected with the live toolset. Tools not present in the session are silently dropped. |
+| `all` | Expose every live tool, including `write_file`, `edit_file`, `execute`, `task`, `web_search`, and `fetch_url`. Requires the unsafe acknowledgement (see below) unless `--auto-approve` is also set. |
+| Comma-separated names | Expose exactly the listed tools. Names are validated against the live toolset; unknown names raise a startup error. |
+
+Examples:
+
+```bash
+# Pure REPL, no host tools exposed (default when --interpreter is set alone)
+dcode --interpreter
+
+# Curated read-only preset
+dcode --interpreter --interpreter-tools safe
+
+# Explicit list
+dcode --interpreter --interpreter-tools read_file,task,web_search
+
+# Everything, paired with auto-approve so per-tool prompts are also off
+dcode --interpreter --interpreter-tools all -y
+```
+
+### The `safe` preset
+
+The `safe` preset is restricted to tools that are already non-HITL outside the REPL:
+
+```python
+{"read_file", "glob", "grep"}
+```
+
+Network tools (`web_search`, `fetch_url`), subagent dispatch (`task`), shell execution (`execute`), and file writes (`write_file`, `edit_file`, MCP write tools) are deliberately excluded. Those tools are HITL-gated outside the REPL, and because PTC bypasses `interrupt_on`, including them in `safe` would silently escalate privileges. If you need them inside the REPL, list them explicitly so the intent is visible at config time, or use `interpreter_ptc="all"` with the unsafe acknowledgement.
+
+### The `all` preset
+
+Using `--interpreter-tools all` (or `ptc = "all"` in `config.toml`) exposes every host tool to `tools.*` calls, including write/shell tools. Because PTC bypasses HITL approval, this is a deliberate sanity gate rather than a convenience toggle.
+
+Outside of `--auto-approve`, you must explicitly acknowledge the implications by setting `[interpreter] ptc_acknowledge_unsafe = true` in `config.toml`. Without that acknowledgement, agent startup raises:
+
+```txt
+interpreter_ptc='all' exposes every host tool to PTC calls that bypass HITL approval.
+Set interpreter_ptc_acknowledge_unsafe=True (or use auto_approve=True) to opt in.
+```
+
+When `--auto-approve` is set, every host tool is already running without prompts, so the acknowledgement is not required.
+
+## Configure via `config.toml`
+
+Persist interpreter defaults under the `[interpreter]` section in `~/.deepagents/config.toml`. CLI flags override these values for the current session.
+
+```toml
+[interpreter]
+enable_interpreter = true
+timeout_seconds = 5.0
+memory_limit_mb = 64
+max_ptc_calls = 256
+max_result_chars = 4000
+ptc = "safe"
+ptc_acknowledge_unsafe = false
+```
+
+<ResponseField name="enable_interpreter" type="boolean" default="false" post={["optional"]}>
+    Wire `CodeInterpreterMiddleware` into the main agent on every session. Equivalent to passing `--interpreter` on each launch. Local-mode only.
+</ResponseField>
+
+<ResponseField name="timeout_seconds" type="number" default="5.0" post={["optional"]}>
+    Per-`js_eval` wall-clock timeout, in seconds. Applies to each invocation independently.
+</ResponseField>
+
+<ResponseField name="memory_limit_mb" type="integer" default="64" post={["optional"]}>
+    QuickJS heap memory cap, in megabytes. Shared across all `js_eval` calls in the session.
+</ResponseField>
+
+<ResponseField name="max_ptc_calls" type="integer" default="256" post={["optional"]}>
+    Maximum `tools.*` host-bridge invocations allowed per `js_eval` call. Because PTC calls bypass HITL approval, this budget is the only runtime limiter on bursty tool fan-out from inside the REPL.
+</ResponseField>
+
+<ResponseField name="max_result_chars" type="integer" default="4000" post={["optional"]}>
+    Maximum characters retained from the `js_eval` result and captured stdout before truncation.
+</ResponseField>
+
+<ResponseField name="ptc" type="string | list[string]" default="false" post={["optional"]}>
+    PTC allowlist. Accepts `false` (or `[]`) for a pure REPL, the sentinel string `"safe"` or `"all"`, or an explicit list of tool names. Invalid values fall back to the default and emit a warning at startup.
+</ResponseField>
+
+<ResponseField name="ptc_acknowledge_unsafe" type="boolean" default="false" post={["optional"]}>
+    Required when `ptc = "all"` is set without `--auto-approve`. Acknowledges that every host tool, including writes and shell, is reachable from inside `js_eval` without HITL approval.
+</ResponseField>
+
+### Example: `safe` preset by default
+
+```toml
+[interpreter]
+enable_interpreter = true
+ptc = "safe"
+```
+
+Every `dcode` session enables the interpreter and exposes the curated read-only preset. Override with `--interpreter-tools all` or `--interpreter-tools task,web_search` on a per-session basis.
+
+### Example: explicit allowlist with raised limits
+
+```toml
+[interpreter]
+enable_interpreter = true
+ptc = ["read_file", "glob", "grep", "task"]
+timeout_seconds = 15.0
+max_ptc_calls = 1024
+```
+
+Useful when the agent orchestrates subagents from `js_eval` over many slices and needs more headroom per call.
+
+## CLI flag reference
+
+| Flag | Description |
+|---|---|
+| `--interpreter` | Enable `CodeInterpreterMiddleware` (`js_eval`) on the main agent. Local mode only; requires the `quickjs` extra. |
+| `--interpreter-tools VALUE` | PTC allowlist for `js_eval`: `safe`, `all`, or a comma-separated list of tool names. Defaults to no PTC (pure REPL). |
+
+CLI flags override the matching `[interpreter]` keys for the current session. Both flags work in interactive mode and in non-interactive (`-n`) runs.
+
+## Limitations
+
+- **Local mode only.** `--interpreter` is rejected when combined with `--sandbox <provider>` other than `none`. Subagents never receive the interpreter in this release.
+- **PTC bypasses HITL.** Tools called as `tools.*` from inside `js_eval` do not trigger `interrupt_on`, even when those same tools require approval at the top level. The PTC allowlist is the only effective gate.
+- **No standalone meta-extra.** `quickjs` is intentionally not part of `all-providers` or `all-sandboxes`. Install it directly when you want the interpreter.
+- **Same-process execution.** QuickJS runs in the `dcode` process. For untrusted or semi-trusted workloads, follow the guidance in the [Interpreters security notes](/oss/deepagents/interpreters#security-and-limits).

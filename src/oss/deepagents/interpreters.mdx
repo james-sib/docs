@@ -64,6 +64,12 @@ QuickJS is the execution boundary for interpreter code. Explicit bridges, such a
 | Reusable helpers used across threads | Interpreter with [interpreter skills](/oss/deepagents/skills#use-interpreter-skills) |
 | Shell commands, package installs, tests, or full OS filesystem access | [Sandboxes](/oss/deepagents/sandboxes) |
 
+:::python
+<Tip>
+    Using Deep Agents Code (`dcode`)? Enable the same middleware as a `js_eval` tool with the `--interpreter` flag. See [Interpreter](/oss/deepagents/code/interpreter) for the CLI flow, the `safe` / `all` PTC presets, and the local-mode constraint.
+</Tip>
+:::
+
 ## Add an interpreter to an agent
 
 Install the QuickJS middleware package, then add the middleware when creating the agent.
