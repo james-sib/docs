@@ -12,7 +12,7 @@ Configure coding agents to route LLM calls through the LLM Gateway, giving your 
 
 Most coding agents let you override the LLM provider endpoint via environment variables or configuration files. By pointing them at the LLM Gateway instead of the provider directly, all LLM calls flow through the gateway. The gateway authenticates the caller, resolves the actual provider key from workspace secrets, enforces policies, and traces the call. No agent code changes required.
 
-Authentication uses your organization's centralized Anthropic API key from workspace secrets, not individual developer subscriptions. To route individual subscription users through the gateway, contact your LangChain support team.
+Authentication uses your organization's centralized Anthropic API key from workspace secrets, not individual developer subscriptions. To route individual subscription users through the gateway, contact your LangChain [support](mailto:support@langchain.dev) team.
 
 ## Prerequisites
 
