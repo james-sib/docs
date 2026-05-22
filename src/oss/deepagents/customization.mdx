@@ -69,6 +69,7 @@ import CustomizationStructuredOutputJs from '/snippets/code-samples/customizatio
 - [Memory](#memory)
 :::python
 - [Profiles](#profiles)
+- [Advanced](#advanced)
 :::
 
 :::python
@@ -565,3 +566,143 @@ When the model generates the structured data, it's captured, validated, and retu
 :::
 
 For more information and examples, see [response format](/oss/langchain/structured-output#response-format).
+
+:::python
+
+## Advanced
+
+`create_deep_agent` is a thin wrapper around [`create_agent`][langchain.agents.create_agent] — under the hood it assembles a middleware stack and calls `create_agent` with it. For fully custom agents, you can use `create_agent` directly and compose exactly the middleware you need.
+
+The most minimal agent is just a model calling tools in a loop:
+
+```python
+from langchain.agents import create_agent
+
+agent = create_agent(
+    model="anthropic:claude-sonnet-4-6",
+    tools=[search],
+)
+```
+
+From here, each section below adds one capability layer, building toward a complete research assistant. Add only the layers your use case needs.
+
+### Execution environment
+
+@[`FilesystemMiddleware`] gives the agent a virtual filesystem: it can read, write, and edit files, and automatically offloads large tool results out of the context window to keep it from filling up.
+
+```python
+from langchain.agents import create_agent
+from deepagents.backends import StateBackend
+from deepagents.middleware import FilesystemMiddleware
+
+backend = StateBackend()
+
+agent = create_agent(
+    model="anthropic:claude-sonnet-4-6",
+    tools=[search],
+    middleware=[
+        FilesystemMiddleware(backend=backend),
+    ],
+)
+```
+
+Swap `StateBackend` for a [`SandboxBackend`](/oss/deepagents/sandboxes) to give the agent an isolated environment with shell execution.
+
+### Context management
+
+@[`MemoryMiddleware`] injects `AGENTS.md` context on every turn. @[`SkillsMiddleware`] progressively loads skill files only when the agent determines they are relevant — keeping the initial context window lean.
+
+```python
+from langchain.agents import create_agent
+from deepagents.backends import StateBackend
+from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware
+
+backend = StateBackend()
+
+agent = create_agent(
+    model="anthropic:claude-sonnet-4-6",
+    tools=[search],
+    middleware=[
+        FilesystemMiddleware(backend=backend),
+        MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),
+        SkillsMiddleware(backend=backend, sources=["./skills/"]),
+    ],
+)
+```
+
+<Note>
+`create_deep_agent` also includes @[`SummarizationMiddleware`] by default, which compresses message history when the context window grows long. Add it explicitly from `langchain.agents.middleware` if your custom agent handles long sessions.
+</Note>
+
+### Planning and delegation
+
+@[`SubAgentMiddleware`] adds a `task` tool that spawns subagents for isolated subtasks. Each subagent runs in its own fresh context window, so complex multi-step work does not exhaust the main agent's context.
+
+```python
+from langchain.agents import create_agent
+from deepagents import SubAgent
+from deepagents.backends import StateBackend
+from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SubAgentMiddleware
+
+backend = StateBackend()
+
+researcher: SubAgent = {
+    "name": "researcher",
+    "description": "Deep-dives into a topic and returns a structured summary.",
+    "system_prompt": "You are a research specialist. Search thoroughly and cite your sources.",
+    "tools": [search],
+}
+
+agent = create_agent(
+    model="anthropic:claude-sonnet-4-6",
+    tools=[search],
+    middleware=[
+        FilesystemMiddleware(backend=backend),
+        MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),
+        SkillsMiddleware(backend=backend, sources=["./skills/"]),
+        SubAgentMiddleware(backend=backend, subagents=[researcher]),
+    ],
+)
+```
+
+For background (non-blocking) subagents that run in parallel, see @[`AsyncSubAgentMiddleware`] and [async subagents](/oss/deepagents/async-subagents).
+
+### Steering
+
+@[`HumanInTheLoopMiddleware`] pauses before specified tool calls so a human can review and approve. A checkpointer is required to preserve the agent's state while waiting.
+
+```python
+from langchain.agents import create_agent
+from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langgraph.checkpoint.memory import MemorySaver
+from deepagents import SubAgent
+from deepagents.backends import StateBackend
+from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SubAgentMiddleware
+
+backend = StateBackend()
+
+researcher: SubAgent = {
+    "name": "researcher",
+    "description": "Deep-dives into a topic and returns a structured summary.",
+    "system_prompt": "You are a research specialist. Search thoroughly and cite your sources.",
+    "tools": [search],
+}
+
+agent = create_agent(
+    model="anthropic:claude-sonnet-4-6",
+    tools=[search],
+    middleware=[
+        FilesystemMiddleware(backend=backend),                                   # execution environment
+        MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),              # context management
+        SkillsMiddleware(backend=backend, sources=["./skills/"]),                # context management
+        SubAgentMiddleware(backend=backend, subagents=[researcher]),             # planning & delegation
+        HumanInTheLoopMiddleware(interrupt_on={"write_file": True}),            # steering
+    ],
+    checkpointer=MemorySaver(),
+)
+```
+
+This fully assembled agent is equivalent to calling `create_deep_agent` with `memory=`, `skills=`, `subagents=`, and `interrupt_on=` — which is exactly what `create_deep_agent` does under the hood.
+
+:::
+
