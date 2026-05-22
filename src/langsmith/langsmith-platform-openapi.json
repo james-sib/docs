@@ -9017,7 +9017,7 @@
         "tags": [
           "run"
         ],
-        "summary": "Read Run",
+        "summary": "Read run",
         "description": "Get a specific run.",
         "operationId": "read_run_api_v1_runs__run_id__get",
         "security": [
@@ -9134,7 +9134,7 @@
         "tags": [
           "run"
         ],
-        "summary": "Update Run",
+        "summary": "Update run",
         "description": "Update a run.",
         "operationId": "update_run_api_v1_runs__run_id__patch",
         "security": [
@@ -9396,7 +9396,7 @@
         "tags": [
           "run"
         ],
-        "summary": "Query Runs (v2)",
+        "summary": "Query runs",
         "operationId": "query_runs_api_v1_runs_query_post",
         "requestBody": {
           "content": {
@@ -42793,7 +42793,7 @@
         "tags": [
           "runs"
         ],
-        "summary": "Query runs",
+        "summary": "Query runs (v2)",
         "parameters": [
           {
             "description": "application/json",
