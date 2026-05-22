@@ -794,7 +794,7 @@
           "Runs"
         ],
         "summary": "Stream a thread run",
-        "description": "Start a run on a thread and stream output as server-sent events. The request must use `agent_id`; `assistant_id` is reserved for server-side forwarding and is rejected.",
+        "description": "Start a run on a thread and stream output as server-sent events. The request must use `agent_id`; `assistant_id` is reserved for server-side forwarding and is rejected. The body always requires a non-empty `messages` array. To resume a thread that paused on a human-in-the-loop interrupt, send the same endpoint with `command.resume = {\"decisions\": [...]}` (an empty system message in `messages` is accepted as a no-op when resuming). See [Resume from a human-in-the-loop interrupt](/langsmith/deploy-managed-deep-agent#resume-from-a-human-in-the-loop-interrupt) for the full decision schema.",
         "operationId": "streamManagedDeepAgentThreadRun",
         "x-mint": {
           "href": "/langsmith/managed-deep-agents-api/runs/stream-thread-run",
@@ -871,14 +871,14 @@
         "tags": [
           "Runs"
         ],
-        "summary": "Resolve an interrupted thread",
-        "description": "Complete a human-interrupt pause on the thread without sending new input, allowing execution to continue or finish. On success the response has no body.",
+        "summary": "Cancel an interrupted thread",
+        "description": "End a human-interrupt pause by advancing the upstream LangGraph runtime to the `__end__` node, terminating the paused run without invoking the pending tool. This endpoint is a cancel/finalize escape hatch — it is **not** an approve shortcut. To approve, edit, reject, or respond on behalf of a paused tool call, send a `command.resume` payload to `POST /threads/{threadID}/runs/stream` instead (see the deploy guide for the resume body shape). Takes no request body. On success the response has no body.",
         "operationId": "resolveManagedDeepAgentThreadInterrupt",
         "x-mint": {
           "href": "/langsmith/managed-deep-agents-api/runs/resolve-interrupt",
           "metadata": {
-            "title": "Resolve an interrupt",
-            "sidebarTitle": "Resolve an interrupt"
+            "title": "Cancel an interrupt",
+            "sidebarTitle": "Cancel an interrupt"
           }
         },
         "parameters": [

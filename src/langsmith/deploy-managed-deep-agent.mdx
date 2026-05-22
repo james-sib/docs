@@ -97,7 +97,9 @@ For the API request, pass the agent instructions and tool configuration directly
 
 Each `mcp_server_url` you reference here needs to be registered first via [Configure MCP servers](#configure-mcp-servers) so its credentials are available at invocation time.
 
-The `interrupt_config` map lets you require human approval for selected tools. Each key is `{mcp_server_url}::{tool_name}` (separator is two colons); trailing slashes on the URL are stripped before matching. Additional `::`-separated parts after the tool name (such as the MCP server display name shown in the example above) are accepted but ignored when matching. Set the value to `true` to require human approval before the tool runs, or `false` to allow it without interrupt.
+Each `tools[].name` must match the tool name **the MCP server itself exposes** (the name returned by the server's `tools/list` response), not the workspace's MCP server display name. For example, Tavily's MCP server exposes `tavily_search` with an underscore — even if you registered the server under a different name like `tavily`, the agent's `tools[].name` must still be `tavily_search`. If the name doesn't match, the runtime silently drops the tool from the model's bound tool set and the agent never gets to call it.
+
+The `interrupt_config` map lets you require human approval for selected tools. Each key is `{mcp_server_url}::{tool_name}` (separator is two colons); trailing slashes on the URL are stripped before matching. Additional `::`-separated parts after the tool name (such as the MCP server display name shown in the example above) are accepted but ignored when matching. Set the value to `true` to require human approval before the tool runs, or `false` to allow it without interrupt. See [Resume from a human-in-the-loop interrupt](#resume-from-a-human-in-the-loop-interrupt) for the resume payload the run expects when an interrupt fires.
 
 ## Configure MCP servers
 
@@ -609,6 +611,140 @@ data: [{"type":"AIMessageChunk","content":[{"text":"ok","type":"text","index":0}
 ```
 
 The run is traced in LangSmith. Open the trace to inspect messages, tool calls, files, subagent activity, and runtime behavior.
+
+## Resume from a human-in-the-loop interrupt
+
+When `interrupt_config` flags a tool with `true`, the run pauses before that tool executes. The pause is delivered as part of the SSE stream — an `__interrupt__` field appears inside a `values` (or `updates`) event, then the stream closes:
+
+```json
+{
+  "__interrupt__": [
+    {
+      "value": {
+        "action_requests": [
+          {
+            "name": "tavily_search",
+            "args": { "query": "agent memory tradeoffs", "max_results": 5 },
+            "description": "Tool execution requires approval\n\nTool: tavily_search\nArgs: {...}"
+          }
+        ],
+        "review_configs": [
+          {
+            "action_name": "tavily_search",
+            "allowed_decisions": ["approve", "edit", "reject", "respond"]
+          }
+        ]
+      },
+      "id": "7ae0be0e5105464d49a267e35083f422"
+    }
+  ]
+}
+```
+
+To act on the pause, post a follow-up run on the **same thread** with a `command.resume` payload. The run picks back up from the interrupted node and either runs the tool, blocks it, or substitutes a synthetic tool reply — depending on the decision.
+
+<Tabs>
+  <Tab title="Python (httpx)">
+    ```python
+    resume_payload = {
+        "agent_id": agent_id,
+        # The API requires a non-empty `messages` array on every run call.
+        # An empty system message is accepted as a no-op when resuming.
+        "messages": [{"role": "system", "content": ""}],
+        "command": {
+            "resume": {
+                "decisions": [{"type": "approve"}],
+            },
+        },
+        "stream_mode": ["values", "updates", "messages-tuple"],
+        "stream_subgraphs": True,
+    }
+
+    with httpx.stream(
+        "POST",
+        f"{BASE_URL}/threads/{thread_id}/runs/stream",
+        headers={**HEADERS, "Accept": "text/event-stream"},
+        json=resume_payload,
+        timeout=None,
+    ) as response:
+        response.raise_for_status()
+        for line in response.iter_lines():
+            if line:
+                print(line)
+    ```
+  </Tab>
+  <Tab title="JavaScript (fetch)">
+    ```ts
+    const response = await fetch(
+      `${BASE_URL}/threads/${threadId}/runs/stream`,
+      {
+        method: "POST",
+        headers: { ...HEADERS, Accept: "text/event-stream" },
+        body: JSON.stringify({
+          agent_id: agentId,
+          // The API requires a non-empty `messages` array on every run call.
+          // An empty system message is accepted as a no-op when resuming.
+          messages: [{ role: "system", content: "" }],
+          command: {
+            resume: {
+              decisions: [{ type: "approve" }],
+            },
+          },
+          stream_mode: ["values", "updates", "messages-tuple"],
+          stream_subgraphs: true,
+        }),
+      },
+    )
+    if (!response.ok || !response.body) throw new Error(await response.text())
+
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader()
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      console.log(value)
+    }
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url "$DEEPAGENTS_BASE_URL/threads/$THREAD_ID/runs/stream" \
+      --header "X-Api-Key: $LANGSMITH_API_KEY" \
+      --header 'Accept: text/event-stream' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "agent_id": "'"$AGENT_ID"'",
+        "messages": [{ "role": "system", "content": "" }],
+        "command": {
+          "resume": {
+            "decisions": [{ "type": "approve" }]
+          }
+        },
+        "stream_mode": ["values", "updates", "messages-tuple"],
+        "stream_subgraphs": true
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+The resume value must be the `HITLResponse` dict `{"decisions": [...]}` — **not** a bare list of decisions. The middleware processes the resume by accessing `decisions = interrupt(request)["decisions"]`, so a top-level list crashes the run with `TypeError: list indices must be integers or slices, not str`.
+</Warning>
+
+Send exactly one decision per `action_request`, in the same order. Each `type` must appear in the matching `review_configs[i].allowed_decisions` — otherwise the run raises `ValueError`.
+
+| Decision | Body | Effect |
+| --- | --- | --- |
+| Approve | `{"type": "approve"}` | Runs the tool with the proposed args. |
+| Edit | `{"type": "edit", "edited_action": {"name": "...", "args": {...}}}` | Runs the tool with modified name/args (the original `tool_call.id` is preserved). |
+| Reject | `{"type": "reject", "message": "..."}` | Blocks the tool. The model receives an error `ToolMessage` containing `message` (or a default rejection notice). |
+| Respond | `{"type": "respond", "message": "..."}` | Skips the tool. The model receives a success `ToolMessage` whose content is `message`, as if the tool had returned it. |
+
+If multiple tool calls are interrupted in the same step (parallel tool calls), the `action_requests` array contains one entry per call and you must send a parallel `decisions` array of the same length and order.
+
+### Cancel an interrupted thread
+
+`POST /v1/deepagents/threads/{thread_id}/resolve-interrupt` is **not** an approve shortcut — it advances the upstream LangGraph runtime to the `__end__` node, terminating the paused run without invoking the pending tool. Use it only when you want to abandon the paused work and free the thread. For any actual approve / edit / reject / respond decision, send a `command.resume` to `/runs/stream` as shown above.
 
 ## Update the agent
 

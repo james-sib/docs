@@ -32790,11 +32790,11 @@
             "Bearer Auth": []
           }
         ],
-        "description": "Completes a human-interrupt pause on the thread without sending new input, allowing execution to continue or finish. On success the response has no body.",
+        "description": "Ends a human-interrupt pause by advancing the upstream LangGraph runtime to the `__end__` node, terminating the paused run without invoking the pending tool. This endpoint is a cancel/finalize escape hatch — it is **not** an approve shortcut. To approve, edit, reject, or respond on behalf of a paused tool call, send a `command.resume` payload to `POST /v1/fleet/threads/{thread_id}/runs/stream` instead. Takes no request body. On success the response has no body.",
         "tags": [
           "fleet threads"
         ],
-        "summary": "Resolve an interrupted thread",
+        "summary": "Cancel an interrupted thread",
         "parameters": [
           {
             "description": "Thread id",
