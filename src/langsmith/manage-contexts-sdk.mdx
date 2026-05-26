@@ -8,7 +8,7 @@ tag: SDK
 Use the LangSmith [Python](/langsmith/smith-python-sdk) and [TypeScript](/langsmith/smith-js-ts-sdk) SDKs to manage **agent repos** and **skill repos** in the [Context Hub](/langsmith/use-the-context-hub) programmatically. [Push](#push-an-agent) new versions from CI, [pull](#pull-an-agent) the latest or a pinned commit at runtime to inject context into your agent, and use additional methods to [check existence](#check-whether-a-repo-exists), [list and search](#list-agents-and-skills) repos, and [delete](#delete-an-agent-or-skill) what you no longer need.
 
 <Note>
-Context Hub methods require `langsmith>=0.7.35` (Python) and `langsmith>=0.5.23` (TypeScript).
+Context Hub methods require `langsmith>=0.7.35` (Python) and `langsmith>=0.5.23` (TypeScript). Update to the latest patch release before using `push_agent` / `pushAgent` or `push_skill` / `pushSkill`; affected builds returned Prompt Hub URLs for Context Hub commits.
 </Note>
 
 ## Setup
@@ -46,7 +46,7 @@ the repo doesn't exist yet, it is created with the metadata you provide
 (`description`, `readme`, `tags`, `is_public`). If it already exists,
 those fields are patched only when explicitly passed.
 
-The method returns a URL pointing to the new commit in the [LangSmith UI](https://smith.langchain.com):
+The method returns a URL pointing to the new commit in the [LangSmith UI](https://smith.langchain.com). The URL uses the Context Hub route, `https://smith.langchain.com/context/<repo>/<commit>?organizationId=<workspace-id>`:
 
 <CodeGroup>
 ```python Python
