@@ -73,7 +73,8 @@ The following example shows a skill that gives instructions on how to provide re
 ---
 name: langgraph-docs
 description: Use this skill for requests related to LangGraph in order to fetch relevant documentation to provide accurate, up-to-date guidance.
-module: index.ts
+metadata:
+  entrypoint: scripts/index.ts
 ---
 
 # langgraph-docs
@@ -136,10 +137,10 @@ pageUrls;
 ```
 ````
 
-The referenced helper code would be placed in `index.ts`:
+The referenced helper code would be placed in `scripts/index.ts`:
 
 ```typescript
-// index.ts
+// scripts/index.ts
 export function resolveLlmsUrl(url: string) {
   return url.endsWith(".md") ? url.slice(0, -3) : url;
 }
@@ -175,8 +176,8 @@ compatibility: Requires internet access for fetching documentation URLs
 metadata:
   author: langchain
   version: "1.0"
+  entrypoint: scripts/index.ts
 allowed-tools: fetch_url
-module: index.ts
 ---
 
 # langgraph-docs
@@ -411,8 +412,8 @@ Use interpreter skills for code that should be:
 To make a skill importable:
 
 <Steps titleSize="h4">
-    <Step title="Add a module entry">
-        Add a `module` key to the skill's `SKILL.md` frontmatter. The value is a JavaScript or TypeScript file path relative to the skill directory.
+    <Step title="Add a metadata entrypoint">
+        Add a `metadata.entrypoint` key to the skill's `SKILL.md` frontmatter. The value is a JavaScript or TypeScript file path relative to the skill directory.
     </Step>
     <Step title="Configure skills normally">
         Pass the skill source path with the `skills` argument when creating the agent.
@@ -431,14 +432,16 @@ Minimal skill layout:
 skills/
 `-- order-helpers/
     |-- SKILL.md
-    `-- index.ts
+    `-- scripts/
+        `-- index.ts
 ```
 
 ````md
 ---
 name: order-helpers
 description: Helper functions for normalizing and grouping order records.
-module: index.ts
+metadata:
+  entrypoint: scripts/index.ts
 ---
 
 # order-helpers
@@ -454,7 +457,7 @@ groupByStatus(...);
 ````
 
 ```typescript
-// skills/order-helpers/index.ts
+// skills/order-helpers/scripts/index.ts
 interface Order {
   id: string;
   status: string;
@@ -504,7 +507,7 @@ const agent = createDeepAgent({
 ```
 :::
 
-The agent can now import the module from interpreter code:
+The agent can now import the helper from interpreter code:
 
 ```javascript
 const { groupByStatus } = await import("@/skills/order-helpers");
