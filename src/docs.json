@@ -294,7 +294,8 @@
                             "langsmith/trace-with-google-gemini",
                             "langsmith/trace-litellm",
                             "langsmith/trace-with-mistral",
-                            "langsmith/trace-openai"
+                            "langsmith/trace-openai",
+                            "langsmith/trace-with-openai-compatible"
                           ]
                         },
                         {
