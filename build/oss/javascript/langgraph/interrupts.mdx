@@ -90,7 +90,7 @@ await graph.invoke(new Command({ resume: true }), config);
 
 <Warning>
 
-`new Command({ resume: ... })` is the **only** `Command` pattern intended as input to `invoke()`/`stream()`. The other `Command` parameters (`update`, `goto`, `graph`) are designed for [returning from node functions](/oss/javascript/langgraph/graph-api#command). Do not pass `new Command({ update: ... })` as input to continue multi-turn conversations—pass a plain input object instead.
+`new Command({ resume: ... })` is the **only** `Command` pattern intended as input to `invoke()`/`stream()`/`stream_events()`. The other `Command` parameters (`update`, `goto`, `graph`) are designed for [returning from node functions](/oss/javascript/langgraph/graph-api#command). Do not pass `new Command({ update: ... })` as input to continue multi-turn conversations—pass a plain input object instead.
 
 </Warning>
 
@@ -108,16 +108,18 @@ The key thing that interrupts unlock is the ability to pause execution and wait 
 
 ### Stream with human-in-the-loop (HITL) interrupts
 
-When building interactive agents with human-in-the-loop workflows, you can stream both message chunks and node updates simultaneously to provide real-time feedback while handling interrupts.
+When building interactive agents with human-in-the-loop workflows, you can use [event streaming](/oss/javascript/langgraph/event-streaming) to consume message chunks and state snapshots concurrently while handling interrupts.
 
-Use multiple stream modes (`"messages"`, `"updates"`, and `"values"`) with `subgraphs=True` (if subgraphs are present) to:
-- Stream AI responses in real-time as they're generated
-- Detect when the graph encounters an interrupt
-- Handle user input and resume execution seamlessly
+Use the typed projections returned by `graph.stream_events(..., version="v3")` in a loop until the run finishes:
+- Stream AI responses token-by-token via `stream.messages`
+- Observe per-step state snapshots via `stream.values`
+- Detect interrupts via `stream.interrupted` and read their payloads from `stream.interrupts`
+- Resume execution by calling `stream_events` again with `Command(resume=...)` and repeat until `stream.interrupted` is false
 
 
 
 - **`Command(resume=...)`**: Resumes graph execution with user-provided data
+
 
 ### Handling multiple interrupts
 
