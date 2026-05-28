@@ -259,34 +259,6 @@ agent.invoke(
 
 The `message` is added to the conversation as feedback to help the agent understand why the action was rejected and what it should do instead.
 
----
-
-### Multiple decisions
-
-When multiple actions are under review, provide a decision for each action in the same order as they appear in the interrupt:
-
-```python
-{
-    "decisions": [
-        {"type": "approve"},
-        {
-            "type": "edit",
-            "edited_action": {
-                "name": "tool_name",
-                "args": {"param": "new_value"}
-            }
-        },
-        {
-            "type": "reject",
-            "message": "This action is not allowed"
-        }
-    ]
-}
-```
-
-
-
-
 </Tab>
 
 <Tab title="💬 respond">
@@ -320,6 +292,34 @@ The `message` is returned to the agent as a successful `ToolMessage`. Use `respo
 
 </Tab>
 </Tabs>
+
+---
+
+### Multiple decisions
+
+When multiple actions are under review, provide a decision for each action in the same order as they appear in the interrupt:
+
+```python
+{
+    "decisions": [
+        {"type": "approve"},
+        {
+            "type": "edit",
+            "edited_action": {
+                "name": "tool_name",
+                "args": {"param": "new_value"}
+            }
+        },
+        {
+            "type": "reject",
+            "message": "This action is not allowed"
+        }
+    ]
+}
+```
+
+
+
 
 ## Streaming with human-in-the-loop
 
