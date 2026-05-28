@@ -272,6 +272,8 @@ Requires `deepagents>=1.9.0` (or `@langchain/langgraph>=1.2.8`).
 </Note>
 
 
+
+
 ## Tool execution
 
 In LangChain, tools are used by agents (for example via [`create_agent`](https://reference.langchain.com/javascript/langchain/index/createAgent)) and tool error handling is configured through [middleware](/oss/javascript/langchain/middleware).
@@ -354,11 +356,8 @@ Handle tool errors using LangChain agent [middleware](/oss/javascript/langchain/
 
 ### State injection
 
-Tools can access the current graph state through [`ToolRuntime`](https://reference.langchain.com/javascript/langchain/index/Runtime):
+Tools access graph state through [`ToolRuntime`](https://reference.langchain.com/javascript/langchain/index/Runtime). See [Access context](#access-context) for state, context, store, and streaming APIs.
 
-
-
-For more details on accessing state, context, and long-term memory from tools, see [Access context](#access-context).
 
 
 ## Dynamic tool selection
