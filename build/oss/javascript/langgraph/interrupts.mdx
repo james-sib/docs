@@ -5,6 +5,7 @@ title: Interrupts
 import LanggraphInterruptsResumeV2Py from '/snippets/code-samples/langgraph-interrupts-resume-v2-py.mdx';
 import LanggraphInterruptsMultiplePy from '/snippets/code-samples/langgraph-interrupts-multiple-py.mdx';
 import LanggraphInterruptsHitlStreamPy from '/snippets/code-samples/langgraph-interrupts-hitl-stream-py.mdx';
+import LanggraphInterruptsHitlStreamJs from '/snippets/code-samples/langgraph-interrupts-hitl-stream-js.mdx';
 import LanggraphInterruptsApprovalPy from '/snippets/code-samples/langgraph-interrupts-approval-py.mdx';
 import LanggraphInterruptsReviewPy from '/snippets/code-samples/langgraph-interrupts-review-py.mdx';
 import LanggraphInterruptsValidatePy from '/snippets/code-samples/langgraph-interrupts-validate-py.mdx';
@@ -118,7 +119,12 @@ Use the typed projections returned by `graph.stream_events(..., version="v3")` i
 
 
 
-- **`Command(resume=...)`**: Resumes graph execution with user-provided data
+<LanggraphInterruptsHitlStreamJs />
+
+- **`stream.messages`**: Chat-model output as content blocks; iterate `message.text` for token deltas. For nested subgraphs, read message chunks from `stream.subgraphs[*].messages`.
+- **`stream.values`**: Full state snapshots after each step
+- **`stream.interrupted` / `stream.interrupts`**: After each run, check whether the graph paused; read payloads from `stream.interrupts`
+- **`Command(resume=...)`**: Pass as the next `streamEvents` input to resume; loop until the run completes without interrupting
 
 
 ### Handling multiple interrupts
