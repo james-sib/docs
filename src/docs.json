@@ -841,6 +841,12 @@
                       ]
                     },
                     {
+                      "group": "Deploy with Terraform",
+                      "pages": [
+                        "langsmith/self-host-terraform"
+                      ]
+                    },
+                    {
                       "group": "Setup guides",
                       "pages": [
                         "langsmith/self-host-dependency-versions",

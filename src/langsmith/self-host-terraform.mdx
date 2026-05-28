@@ -1,0 +1,115 @@
+---
+title: Deploy LangSmith with Terraform
+sidebarTitle: Overview
+description: Provision LangSmith self-hosted on AWS, Azure, GCP, or OpenShift using LangChain's production-ready Terraform modules.
+---
+
+<Info>
+Self-hosted LangSmith is an add-on to the Enterprise plan designed for our largest, most security-conscious customers. See [pricing](https://www.langchain.com/pricing) for details, or [contact sales](https://www.langchain.com/contact-sales) to request a license key for trial.
+</Info>
+
+LangChain publishes production-ready Terraform modules for [LangSmith self-hosted](/langsmith/self-hosted) at [github.com/langchain-ai/terraform](https://github.com/langchain-ai/terraform). The modules provision the cloud foundation (network, cluster, database, cache, object storage, secrets, DNS) and install the LangSmith Helm chart with sensible defaults.
+
+Use this path when you want infrastructure as code from day one. If you already manage cloud infrastructure with your own tooling and only need the application install, follow the [Helm installation guide](/langsmith/kubernetes) instead.
+
+<Tip>
+**Prefer Helm?** The [Kubernetes setup guide](/langsmith/kubernetes) walks through a Helm-only install against any conformant cluster. The Terraform path bundles cluster provisioning, secrets wiring, and the Helm release into one workflow.
+</Tip>
+
+## Choose a provider
+
+<CardGroup cols={2}>
+  <Card title="AWS (EKS)" icon="brand-aws" href="https://github.com/langchain-ai/terraform/tree/main/modules/aws">
+    Provision EKS, RDS PostgreSQL, ElastiCache, S3, and networking. Status: GA.
+  </Card>
+  <Card title="Azure (AKS)" icon="brand-windows" href="https://github.com/langchain-ai/terraform/tree/main/modules/azure">
+    Provision AKS, Azure Database for PostgreSQL, Azure Managed Redis, Blob Storage, and Key Vault. Status: GA.
+  </Card>
+  <Card title="GCP (GKE)" icon="brand-google" href="https://github.com/langchain-ai/terraform/tree/main/modules/gcp">
+    Provision GKE, Cloud SQL, Memorystore, GCS, and Workload Identity. Status: GA.
+  </Card>
+  <Card title="OpenShift (OCP)" icon="brand-redhat" href="https://github.com/langchain-ai/terraform/tree/main/modules/ocp">
+    Configure namespaces, RBAC, operators, and storage classes on an existing OCP or ROSA cluster. Status: Preview.
+  </Card>
+</CardGroup>
+
+Per-provider walkthroughs land here in the next release. Until then, follow the README in each module directory linked above.
+
+## Prerequisites
+
+Install the following tools before running the modules:
+
+| Tool | Minimum version | Purpose |
+|---|---|---|
+| `terraform` | 1.5 | Run the modules |
+| `kubectl` | 1.28 | Inspect the cluster after provisioning |
+| `helm` | 3.12 | Manage the LangSmith chart release |
+| Cloud CLI | latest | `aws`, `az`, `gcloud`, or `oc` for the target provider |
+
+You also need:
+
+- A LangSmith license key. [Contact sales](https://www.langchain.com/contact-sales) to request one.
+- Permissions in the target cloud account to create VPC or VNet networking, a managed Kubernetes cluster, managed databases, object storage, secrets, and IAM roles.
+- A registered domain (or subdomain) for the LangSmith UI endpoint.
+
+## Two-pass deployment model
+
+Each provider module deploys in two passes:
+
+<Steps>
+  <Step title="Pass 1 — Infrastructure">
+    Terraform provisions the cloud foundation: virtual network, managed Kubernetes cluster, managed PostgreSQL, managed Redis or cache, blob storage bucket, secret store, and the IAM roles or identities that connect them. Expect 20 to 25 minutes for a clean run.
+  </Step>
+  <Step title="Pass 2 — LangSmith">
+    Helm installs the LangSmith chart against the cluster from Pass 1. Secrets sync from the cloud-native store via [External Secrets Operator](https://external-secrets.io/), so no credentials live in `tfvars` or git.
+  </Step>
+</Steps>
+
+Azure offers additional optional passes for [LangSmith Deployment](/langsmith/deploy-self-hosted-full-platform), Agent Builder, and Insights. AWS and GCP cover the same optional add-ons in a single follow-up step.
+
+## Deployment tiers
+
+Pick a tier with a single Terraform variable. The modules size every dependent resource accordingly.
+
+| Tier | PostgreSQL | Redis | ClickHouse | Use case |
+|---|---|---|---|---|
+| `dev` | In-cluster | In-cluster | In-cluster | Demos, evaluations, short-lived POCs |
+| `production` | Cloud-managed (RDS, Cloud SQL, Azure Database) | Cloud-managed (ElastiCache, Memorystore, Azure Cache) | [LangChain Managed ClickHouse](/langsmith/langsmith-managed-clickhouse) | Persistent, scalable production |
+| `production-large` | Cloud-managed, larger instance class | Cloud-managed, larger instance class | LangChain Managed ClickHouse | High-throughput production |
+
+<Warning>
+In-cluster ClickHouse is for development and POC only. Production deployments should use [LangChain Managed ClickHouse](/langsmith/langsmith-managed-clickhouse) or a self-managed external ClickHouse cluster. Blob storage is always required because trace payloads must not live in ClickHouse.
+</Warning>
+
+## What the modules provision
+
+- **Networking:** VPC or VNet with public and private subnets, NAT, and security groups.
+- **Compute:** Managed Kubernetes (EKS, AKS, or GKE) with autoscaling node pools sized per tier.
+- **Data plane:** Managed PostgreSQL, managed Redis or cache, and a blob storage bucket for trace payloads.
+- **Secrets:** Cloud-native secret store (AWS SSM Parameter Store, Azure Key Vault, GCP Secret Manager) synced into Kubernetes by [External Secrets Operator](https://external-secrets.io/).
+- **Ingress:** Cloud-native load balancer by default. Envoy Gateway (Gateway API) is available for multi-namespace dataplane deployments.
+- **Optional hardening (AWS today):** AWS Network Firewall with FQDN egress allowlists, WAFv2, CloudTrail, and a private EKS API endpoint with SSM bastion access.
+
+## Enterprise feature toggles
+
+Each module exposes flags for the optional LangSmith add-ons:
+
+- [LangSmith Deployment](/langsmith/deploy-self-hosted-full-platform) (Agent Server and Fleet)
+- Agent Builder
+- Insights (ClickHouse-backed analytics)
+- Polly (AI evaluation and monitoring)
+
+Toggle each feature in the `tfvars` file before running `make apply`.
+
+## Need a tailored package?
+
+<Note>
+Enterprise customers can request a tailored Terraform package from their LangChain Solutions Architect. The tailored package adds account-specific defaults, customer-managed key wiring, and any custom hardening agreed during the engagement. The public modules linked above are the same source of truth, so a tailored package stays compatible with the upstream module structure.
+</Note>
+
+## Next steps
+
+- Open the [README in your provider directory](https://github.com/langchain-ai/terraform) and follow the quickstart.
+- Review [minimum dependency versions](/langsmith/self-host-dependency-versions) for PostgreSQL, ClickHouse, Redis, and Kubernetes.
+- Plan capacity with the [scaling guide](/langsmith/self-host-scale).
+- After Pass 2, enable [LangSmith Deployment](/langsmith/deploy-self-hosted-full-platform) to add agent deployment and management to the UI.
