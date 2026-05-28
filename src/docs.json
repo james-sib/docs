@@ -854,6 +854,16 @@
                             "langsmith/self-host-terraform-aws-troubleshooting",
                             "langsmith/self-host-terraform-aws-teardown"
                           ]
+                        },
+                        {
+                          "group": "GCP",
+                          "pages": [
+                            "langsmith/self-host-terraform-gcp-quickstart",
+                            "langsmith/self-host-terraform-gcp-architecture",
+                            "langsmith/self-host-terraform-gcp-quick-reference",
+                            "langsmith/self-host-terraform-gcp-troubleshooting",
+                            "langsmith/self-host-terraform-gcp-teardown"
+                          ]
                         }
                       ]
                     },
