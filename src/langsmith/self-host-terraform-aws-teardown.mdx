@@ -7,7 +7,7 @@ description: Remove a LangSmith self-hosted deployment on AWS EKS, with and with
 This page covers two teardown scenarios for deployments provisioned with the [AWS Terraform modules](https://github.com/langchain-ai/terraform/tree/main/modules/aws):
 
 1. **With Terraform state** — the happy path using `terraform destroy`.
-2. **Without Terraform state** — manual cleanup with the AWS CLI when state is lost.
+2. **Without Terraform state** — manual cleanup with the AWS CLI when Terraform state isn't available.
 
 Both follow the same reverse-dependency order. Pick the section that matches your situation.
 

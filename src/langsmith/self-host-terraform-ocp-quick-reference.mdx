@@ -1,0 +1,97 @@
+---
+title: OpenShift Terraform quick reference
+sidebarTitle: Quick reference
+description: Essential commands and shortcuts for managing a LangSmith deployment on OpenShift.
+---
+
+<Warning>
+The OpenShift Terraform path is in **Preview**. Commands here reflect the planned production model and the current POC. Validate against your environment before relying on them.
+</Warning>
+
+Command cheat sheet for working with LangSmith deployments on OpenShift, provisioned with the [OCP Terraform modules](https://github.com/langchain-ai/terraform/tree/main/modules/ocp).
+
+## Prerequisites
+
+```bash
+oc login --token=<token> --server=<api-url>
+oc whoami
+oc version
+```
+
+## Planned deployment (production)
+
+```bash
+cd terraform/modules/ocp/infra/langsmith
+terraform init
+terraform apply
+
+helm repo add langchain https://langchain-ai.github.io/helm
+helm repo update
+
+helm install langsmith langchain/langsmith \
+  -f langsmith-values.yaml \
+  -n langsmith --create-namespace \
+  --set config.langsmithLicenseKey="<license-key>" \
+  --set config.hostname="langsmith.apps.<cluster-domain>"
+```
+
+## POC — Single Node OpenShift on Azure
+
+```bash
+# 1. Provision the Azure host
+cd terraform/modules/ocp/infra/azure-host
+terraform init
+cp terraform.tfvars.example terraform.tfvars
+# Edit Azure subscription ID and public SSH key
+terraform apply
+
+# 2. SSH and run setup scripts
+ssh <public-ip>
+sudo bash /opt/scripts/00-check-prereqs.sh
+sudo bash /opt/scripts/01-setup-kvm.sh
+sudo bash /opt/scripts/02-install-ocp-tools.sh
+sudo bash /opt/scripts/03-generate-sno-iso.sh
+sudo bash /opt/scripts/04-deploy-sno.sh
+sudo bash /opt/scripts/05-post-install.sh
+
+# 3. Verify
+oc whoami
+oc get nodes
+oc get co
+```
+
+## kubectl and oc
+
+```bash
+# Pod health
+kubectl get pods -n langsmith
+oc get pods -n langsmith
+oc describe pod <pod-name> -n langsmith
+oc logs <pod-name> -n langsmith --tail=100 -f
+
+# Routes (default ingress)
+oc get routes -n langsmith
+oc describe route <route-name> -n langsmith
+
+# Gateway API (OCP 4.13+)
+kubectl get gateway -n langsmith
+kubectl get httproute -n langsmith
+
+# Helm
+helm list -n langsmith
+helm status langsmith -n langsmith
+helm get values langsmith -n langsmith
+
+# Operators (OLM)
+oc get csv -A | grep -E "crunchy|redis|cert-manager"
+oc get installplan -A
+
+# SCC inspection
+oc adm policy who-can use scc nonroot
+```
+
+## Reference
+
+- [LangSmith Helm chart](https://langchain-ai.github.io/helm)
+- [OpenShift SCC documentation](https://docs.openshift.com/container-platform/latest/authentication/managing-security-context-constraints.html)
+- [LangSmith self-hosted changelog](/langsmith/self-hosted-changelog)

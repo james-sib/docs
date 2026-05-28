@@ -1,0 +1,77 @@
+---
+title: OpenShift Terraform troubleshooting
+sidebarTitle: Troubleshooting
+description: Common issues, diagnostics, and fixes for LangSmith deployments on OpenShift.
+---
+
+<Warning>
+The OpenShift Terraform path is in **Preview**. The known-issue catalog grows as the module matures and customer deployments surface new edge cases.
+</Warning>
+
+## Known considerations
+
+### SCC (Security Context Constraints)
+
+OpenShift enforces SCCs more strictly than standard Kubernetes pod security. LangSmith pods may require a custom SCC or the `nonroot` SCC to run without root privileges.
+
+Check who can use the relevant SCCs:
+
+```bash
+oc adm policy who-can use scc nonroot
+oc adm policy who-can use scc anyuid
+```
+
+Grant the LangSmith ServiceAccount access if needed:
+
+```bash
+oc adm policy add-scc-to-user nonroot -z langsmith-sa -n langsmith
+```
+
+### Route vs Gateway API
+
+OpenShift Routes are the default ingress mechanism. Gateway API is available on OCP 4.13+ via OpenShift Gateway API or Istio.
+
+Check cluster version before choosing:
+
+```bash
+oc version
+```
+
+For Route-based ingress, set the appropriate annotation in Helm values (see [Pass 2—LangSmith](/langsmith/self-host-terraform-ocp-pass-2-langsmith)).
+
+### ODF / S3-compatible storage
+
+[OpenShift Data Foundation](https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent-storage-ocs.html) (ODF) provides an S3-compatible object store (NooBaa / MCG). LangSmith blob storage is configured identically to any S3-compatible endpoint — set `endpoint_url`, `access_key`, and `secret_key` in Helm values.
+
+For an in-cluster alternative, the POC ships with MinIO.
+
+## Diagnostic commands
+
+```bash
+# Cluster access
+oc whoami
+oc get nodes
+oc get co   # cluster operators
+
+# Pod health
+oc get pods -n langsmith
+oc describe pod <pod-name> -n langsmith
+oc logs <pod-name> -n langsmith --tail=100 -f
+
+# Routes
+oc get routes -n langsmith
+oc describe route <route-name> -n langsmith
+
+# Operators (OLM)
+oc get csv -A | grep -E "crunchy|redis|cert-manager"
+oc get installplan -A
+
+# SCC inspection
+oc get scc
+oc describe scc nonroot
+```
+
+## Reference
+
+- [OpenShift SCC documentation](https://docs.openshift.com/container-platform/latest/authentication/managing-security-context-constraints.html)
+- [LangSmith self-hosted changelog](/langsmith/self-hosted-changelog)

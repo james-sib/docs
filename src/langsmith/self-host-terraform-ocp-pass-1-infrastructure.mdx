@@ -1,0 +1,93 @@
+---
+title: "OpenShift Pass 1: Infrastructure"
+sidebarTitle: "Pass 1: Infrastructure"
+description: Configure namespaces, RBAC, operators, storage classes, and backing services on an existing OCP cluster.
+---
+
+<Warning>
+The OCP Terraform module at `infra/langsmith/` is in active development. The steps below reflect the planned production model plus the current POC scripts. Validate against your environment before using in production.
+</Warning>
+
+The OCP cluster is assumed pre-existing (ROSA or on-premises OpenShift 4.12+). Pass 1 configures Kubernetes resources on top of it: namespaces, RBAC, operators (Crunchy PGO, Redis, cert-manager), and storage classes.
+
+## Planned production path (ROSA or on-prem OCP)
+
+When the Terraform module is generally available, Pass 1 will run:
+
+```bash
+cd terraform/modules/ocp/infra
+terraform init
+cp terraform.tfvars.example terraform.tfvars
+# Edit: kubeconfig_path, langsmith_license_key, blob_storage_type
+
+terraform apply
+```
+
+Planned variables:
+
+```hcl
+kubeconfig_path    = "~/.kube/config"
+kubeconfig_context = "default/api-<cluster>:<port>/<user>"
+
+langsmith_license_key = "<license-key>"
+langsmith_hostname    = "langsmith.apps.<cluster-domain>"
+
+# Storage: "minio" | "odf" | "external-s3"
+blob_storage_type = "minio"
+```
+
+<Tip>
+OpenShift enforces SCCs more strictly than standard Kubernetes pod security. LangSmith pods may require the `nonroot` SCC or a custom SCC. The Terraform module handles this automatically when it becomes available.
+</Tip>
+
+## POC — Single Node OpenShift on Azure
+
+The current working path uses `terraform/modules/ocp/infra/azure-host/` to provision a simulated baremetal host, then runs setup scripts inside it. This is suitable for testing and demos, not for production.
+
+### Step 1 — Provision the Azure host
+
+```bash
+cd terraform/modules/ocp/infra/azure-host
+terraform init
+cp terraform.tfvars.example terraform.tfvars
+# Edit: Azure subscription ID and public SSH key
+terraform apply
+```
+
+The host is `Standard_D16s_v5` (16 vCPU / 64 GB) by default, with a 600 GB Premium LRS data disk for the KVM storage pool.
+
+### Step 2 — SSH and run setup scripts in order
+
+```bash
+ssh <public-ip>
+
+sudo bash /opt/scripts/00-check-prereqs.sh
+sudo bash /opt/scripts/01-setup-kvm.sh
+sudo bash /opt/scripts/02-install-ocp-tools.sh
+sudo bash /opt/scripts/03-generate-sno-iso.sh
+sudo bash /opt/scripts/04-deploy-sno.sh
+sudo bash /opt/scripts/05-post-install.sh
+```
+
+Each script:
+
+| Script | Purpose |
+|---|---|
+| `00-check-prereqs.sh` | Verify host readiness |
+| `01-setup-kvm.sh` | Install KVM, create bridge, configure firewalld |
+| `02-install-ocp-tools.sh` | Download `oc`, `openshift-install`, and `helm` |
+| `03-generate-sno-iso.sh` | Build the agent ISO from install and agent configs |
+| `04-deploy-sno.sh` | Create the KVM guest, boot the ISO, wait for install |
+| `05-post-install.sh` | Verify cluster, print kubeconfig and URLs |
+
+### Step 3 — Verify cluster access
+
+```bash
+oc whoami
+oc get nodes
+oc get co   # all cluster operators should be Available
+```
+
+## Next step
+
+Continue with [Pass 2—LangSmith](/langsmith/self-host-terraform-ocp-pass-2-langsmith) to install the application via Helm.

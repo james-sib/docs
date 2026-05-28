@@ -1,0 +1,175 @@
+---
+title: OpenShift Terraform quickstart
+sidebarTitle: Quickstart
+description: Walkthrough for deploying LangSmith self-hosted on OpenShift (OCP) using the LangChain Terraform modules.
+---
+
+<Warning>
+The OpenShift Terraform path is in **Preview**. The end-to-end Terraform module is under active development. The steps below cover the planned production path plus the current POC (Single Node OpenShift on Azure). Validate against your environment before relying on this for production.
+</Warning>
+
+LangSmith on OpenShift assumes the OCP cluster is pre-existing (ROSA, OCP on AWS, or on-premises OCP 4.12+). The Terraform modules at [github.com/langchain-ai/terraform/tree/main/modules/ocp](https://github.com/langchain-ai/terraform/tree/main/modules/ocp) configure namespaces, RBAC, operators (Crunchy PGO, Redis, cert-manager), storage classes, and the LangSmith Helm release on top.
+
+## Prerequisites
+
+| Tool | Minimum version | Purpose |
+|---|---|---|
+| OpenShift cluster | 4.12 | ROSA or on-premises |
+| `oc` CLI | matches cluster | Authenticate, query OpenShift resources |
+| Terraform | 1.5 | Run the OCP modules |
+| `kubectl` | 1.28 | Inspect the cluster |
+| Helm | 3.12 | Install and manage the LangSmith chart |
+| Cluster admin | — | Required for initial setup (operators, RBAC, SCCs) |
+
+A LangSmith license key is also required. [Contact sales](https://www.langchain.com/contact-sales) to request one.
+
+## Clone the repo
+
+```bash
+git clone https://github.com/langchain-ai/terraform.git
+cd terraform/modules/ocp
+```
+
+## Authenticate
+
+```bash
+oc login --token=<token> --server=<api-url>
+oc whoami
+oc version
+```
+
+## Pass 1 — Infrastructure (planned)
+
+The planned production path configures namespaces, RBAC, operators, and storage classes on the existing OCP cluster:
+
+```bash
+cd infra/langsmith
+terraform init
+cp terraform.tfvars.example terraform.tfvars
+# Edit: kubeconfig_path, langsmith_license_key, blob_storage_type
+
+terraform apply
+```
+
+Planned variables:
+
+```hcl
+kubeconfig_path    = "~/.kube/config"
+kubeconfig_context = "default/api-<cluster>:<port>/<user>"
+
+langsmith_license_key = "<license-key>"
+langsmith_hostname    = "langsmith.apps.<cluster-domain>"
+
+# Storage: "minio" | "odf" | "external-s3"
+blob_storage_type = "minio"
+```
+
+<Tip>
+OpenShift enforces SCCs more strictly than standard Kubernetes pod security. LangSmith pods may require the `nonroot` SCC or a custom SCC. The planned Terraform module configures this automatically.
+</Tip>
+
+For the full per-pass walkthrough, see [Pass 1—Infrastructure](/langsmith/self-host-terraform-ocp-pass-1-infrastructure).
+
+## Pass 2 — LangSmith Helm install
+
+```bash
+helm repo add langchain https://langchain-ai.github.io/helm
+helm repo update
+
+helm install langsmith langchain/langsmith \
+  -f langsmith-values.yaml \
+  -n langsmith --create-namespace \
+  --set config.langsmithLicenseKey="<license-key>" \
+  --set config.hostname="langsmith.apps.<cluster-domain>"
+```
+
+Verify:
+
+```bash
+kubectl get pods -n langsmith
+kubectl get svc -n langsmith
+```
+
+For details, see [Pass 2—LangSmith](/langsmith/self-host-terraform-ocp-pass-2-langsmith).
+
+## POC path — Single Node OpenShift on Azure
+
+The current working path uses `infra/azure-host/` to provision a simulated baremetal host running KVM, then installs Single Node OpenShift 4.14 inside it.
+
+### Step 1 — Provision the Azure host
+
+```bash
+cd infra/azure-host
+terraform init
+cp terraform.tfvars.example terraform.tfvars
+# Set your Azure subscription ID and public SSH key
+terraform apply
+```
+
+This creates an `Standard_D16s_v5` (16 vCPU / 64 GB) VM with a 600 GB Premium LRS data disk for the KVM storage pool. `Standard_D32s_v5` (32 vCPU / 128 GB) is recommended for comfortable headroom.
+
+### Step 2 — SSH and run setup scripts
+
+```bash
+ssh <public-ip>
+
+sudo bash /opt/scripts/00-check-prereqs.sh
+sudo bash /opt/scripts/01-setup-kvm.sh
+sudo bash /opt/scripts/02-install-ocp-tools.sh
+sudo bash /opt/scripts/03-generate-sno-iso.sh
+sudo bash /opt/scripts/04-deploy-sno.sh
+sudo bash /opt/scripts/05-post-install.sh
+```
+
+### Step 3 — Verify cluster access
+
+```bash
+oc whoami
+oc get nodes
+oc get co   # check all cluster operators are Available
+```
+
+### DNS — `nip.io` zero-config
+
+The POC uses [nip.io](https://nip.io). The public IP is embedded in the domain name so no DNS setup is needed:
+
+```txt
+Public IP:   1.2.3.4
+Base domain: 1-2-3-4.nip.io
+
+API server:  https://api.sno-langsmith.1-2-3-4.nip.io:6443
+OCP console: https://console-openshift-console.apps.sno-langsmith.1-2-3-4.nip.io
+LangSmith:   https://langsmith.apps.sno-langsmith.1-2-3-4.nip.io
+```
+
+## Ingress: Route vs Gateway API
+
+OpenShift Routes are the default ingress mechanism. Gateway API is available on OCP 4.13+ via OpenShift Gateway API or Istio.
+
+Route-based (default):
+
+```yaml
+# langsmith-values.yaml
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "openshift-default"
+```
+
+Gateway API (OCP 4.13+):
+
+```yaml
+ingress:
+  enabled: false
+gateway:
+  enabled: true
+```
+
+## Next steps
+
+- Per-pass walkthrough: [Pass 1—Infrastructure](/langsmith/self-host-terraform-ocp-pass-1-infrastructure), [Pass 2—LangSmith](/langsmith/self-host-terraform-ocp-pass-2-langsmith).
+- [OCP architecture](/langsmith/self-host-terraform-ocp-architecture).
+- [OCP quick reference](/langsmith/self-host-terraform-ocp-quick-reference).
+- [OCP variables](/langsmith/self-host-terraform-ocp-variables).
+- [OCP troubleshooting](/langsmith/self-host-terraform-ocp-troubleshooting).
+- [OCP teardown](/langsmith/self-host-terraform-ocp-teardown).

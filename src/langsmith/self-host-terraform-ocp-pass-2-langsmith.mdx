@@ -1,0 +1,64 @@
+---
+title: "OpenShift Pass 2: LangSmith"
+sidebarTitle: "Pass 2: LangSmith"
+description: Deploy LangSmith via Helm on OpenShift.
+---
+
+Deploy the LangSmith Helm chart into the `langsmith` namespace.
+
+**Duration:** ~10 minutes. **Prerequisite:** [Pass 1—Infrastructure](/langsmith/self-host-terraform-ocp-pass-1-infrastructure).
+
+## Add the Helm repo
+
+```bash
+helm repo add langchain https://langchain-ai.github.io/helm
+helm repo update
+```
+
+## Install LangSmith
+
+```bash
+helm install langsmith langchain/langsmith \
+  -f langsmith-values.yaml \
+  -n langsmith --create-namespace \
+  --set config.langsmithLicenseKey="<license-key>" \
+  --set config.hostname="langsmith.apps.<cluster-domain>"
+```
+
+## Verify
+
+```bash
+kubectl get pods -n langsmith
+kubectl get svc -n langsmith
+```
+
+## OpenShift Route vs Gateway API
+
+OpenShift Routes are the default ingress mechanism. Gateway API is available on OCP 4.13+ via OpenShift Gateway API or Istio.
+
+Route-based (default for OCP):
+
+```yaml
+# langsmith-values.yaml
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "openshift-default"
+```
+
+Gateway API (OCP 4.13+ with OpenShift Gateway API or Istio):
+
+```yaml
+ingress:
+  enabled: false
+gateway:
+  enabled: true
+```
+
+<Warning>
+Check your cluster version before choosing. The Gateway API requires OCP 4.13 or later and an installed Gateway API implementation. Route-based ingress is the safer default.
+</Warning>
+
+## Next step
+
+Pass 3 (LangSmith Deployment) is planned for a future release of the OCP modules. For the current preview, the base Helm install is the end of the supported path.

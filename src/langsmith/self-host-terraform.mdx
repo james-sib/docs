@@ -10,10 +10,10 @@ Self-hosted LangSmith is an add-on to the Enterprise plan designed for LangChain
 
 LangChain publishes production-ready Terraform modules for [LangSmith self-hosted](/langsmith/self-hosted) at [github.com/langchain-ai/terraform](https://github.com/langchain-ai/terraform). The modules provision the cloud foundation (network, cluster, database, cache, object storage, secrets, DNS) and install the LangSmith Helm chart with sensible defaults.
 
-Use this path when you want infrastructure as code from day one. If you already manage cloud infrastructure with your own tooling and only need the application install, follow the [Helm installation guide](/langsmith/kubernetes) instead.
+Use this path when you want infrastructure as code from day one. If you already manage cloud infrastructure with your own tooling and need just the application install, follow the [Helm installation guide](/langsmith/kubernetes) instead.
 
 <Tip>
-**Prefer Helm?** The [Kubernetes setup guide](/langsmith/kubernetes) walks through a Helm-only install against any conformant cluster. The Terraform path bundles cluster provisioning, secrets wiring, and the Helm release into one workflow.
+**Prefer Helm?** The [Kubernetes setup guide](/langsmith/kubernetes) walks through installing with Helm against any conformant cluster, no Terraform required. The Terraform path bundles cluster provisioning, secrets wiring, and the Helm release into one workflow.
 </Tip>
 
 ## Choose a provider
@@ -28,18 +28,18 @@ Use this path when you want infrastructure as code from day one. If you already 
   <Card title="GCP (GKE)" icon="brand-google" href="/langsmith/self-host-terraform-gcp-quickstart">
     Provision GKE, Cloud SQL, Memorystore, GCS, and Workload Identity. Status: GA.
   </Card>
-  <Card title="OpenShift (OCP)" icon="brand-redhat" href="https://github.com/langchain-ai/terraform/tree/main/modules/ocp">
+  <Card title="OpenShift (OCP)" icon="brand-redhat" href="/langsmith/self-host-terraform-ocp-quickstart">
     Configure namespaces, RBAC, operators, and storage classes on an existing OCP or ROSA cluster. Status: Preview.
   </Card>
 </CardGroup>
 
-AWS, Azure, and GCP paths are fully documented. The OpenShift walkthrough lands here in a future release; until then, follow the README in the [OCP module directory](https://github.com/langchain-ai/terraform/tree/main/modules/ocp).
+All four provider paths are documented. AWS, Azure, and GCP are GA; the OpenShift path is in preview while the Terraform module matures.
 
 ## Prerequisites
 
 Install the following tools before running the modules:
 
-| Tool | Minimum version | Purpose |
+| Tool | Version | Purpose |
 |---|---|---|
 | `terraform` | 1.5 | Run the modules |
 | `kubectl` | 1.28 | Inspect the cluster after provisioning |
@@ -78,7 +78,7 @@ Pick a tier with a single Terraform variable. The modules size every dependent r
 | `production-large` | Cloud-managed, larger instance class | Cloud-managed, larger instance class | LangChain Managed ClickHouse | High-throughput production |
 
 <Warning>
-In-cluster ClickHouse is for development and POC only. Production deployments must use [LangChain Managed ClickHouse](/langsmith/langsmith-managed-clickhouse) or a self-managed external ClickHouse cluster. Blob storage is always required because trace payloads must not live in ClickHouse.
+Use in-cluster ClickHouse for development and POC, not production. Production deployments must use [LangChain Managed ClickHouse](/langsmith/langsmith-managed-clickhouse) or a self-managed external ClickHouse cluster. Blob storage is always required because trace payloads must not live in ClickHouse.
 </Warning>
 
 ## What the modules provision
@@ -110,6 +110,6 @@ Enterprise customers can request a tailored Terraform package from their LangCha
 ## Next steps
 
 - Open the [README in your provider directory](https://github.com/langchain-ai/terraform) and follow the quickstart.
-- Review [minimum dependency versions](/langsmith/self-host-dependency-versions) for PostgreSQL, ClickHouse, Redis, and Kubernetes.
+- Review [required dependency versions](/langsmith/self-host-dependency-versions) for PostgreSQL, ClickHouse, Redis, and Kubernetes.
 - Plan capacity with the [scaling guide](/langsmith/self-host-scale).
 - After Pass 2, enable [LangSmith Deployment](/langsmith/deploy-self-hosted-full-platform) to add agent deployment and management to the UI.

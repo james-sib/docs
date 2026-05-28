@@ -880,6 +880,19 @@
                             "langsmith/self-host-terraform-azure-troubleshooting",
                             "langsmith/self-host-terraform-azure-teardown"
                           ]
+                        },
+                        {
+                          "group": "OpenShift (preview)",
+                          "pages": [
+                            "langsmith/self-host-terraform-ocp-quickstart",
+                            "langsmith/self-host-terraform-ocp-pass-1-infrastructure",
+                            "langsmith/self-host-terraform-ocp-pass-2-langsmith",
+                            "langsmith/self-host-terraform-ocp-architecture",
+                            "langsmith/self-host-terraform-ocp-quick-reference",
+                            "langsmith/self-host-terraform-ocp-variables",
+                            "langsmith/self-host-terraform-ocp-troubleshooting",
+                            "langsmith/self-host-terraform-ocp-teardown"
+                          ]
                         }
                       ]
                     },

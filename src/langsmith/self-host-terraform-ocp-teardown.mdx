@@ -1,0 +1,55 @@
+---
+title: OpenShift Terraform teardown
+sidebarTitle: Teardown
+description: Step-by-step instructions for safely destroying a LangSmith deployment on OpenShift.
+---
+
+<Warning>
+The OpenShift Terraform path is in **Preview**. The teardown procedure below is the planned shape; specifics may change as the module matures.
+</Warning>
+
+<Tip>
+Before destroying, review the [LangSmith self-hosted changelog](/langsmith/self-hosted-changelog) for version-specific teardown notes.
+</Tip>
+
+## Teardown order
+
+```txt
+Pass 3 (if enabled)  → Remove LangGraph deployments (LGP CRDs + pods)
+Pass 2               → Uninstall LangSmith Helm release
+Pass 1               → Remove operators, namespaces, storage resources
+```
+
+## General steps
+
+```bash
+# Remove LangGraph deployments (if Pass 3 was enabled)
+kubectl delete lgp --all -n langsmith
+kubectl delete crd lgps.apps.langchain.ai
+
+# Uninstall LangSmith
+helm uninstall langsmith -n langsmith
+
+# Delete namespace
+oc delete project langsmith
+
+# Terraform destroy (when the production module is available)
+cd terraform/modules/ocp/infra/langsmith
+terraform destroy
+```
+
+## POC teardown
+
+For deployments built with the Single Node OpenShift on Azure POC:
+
+```bash
+# Delete the Azure VM and its resource group
+cd terraform/modules/ocp/infra/azure-host
+terraform destroy
+```
+
+This removes the simulated baremetal host along with the SNO cluster running inside it. No further cleanup is required.
+
+## Reference
+
+- [LangSmith self-hosted changelog](/langsmith/self-hosted-changelog)

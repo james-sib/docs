@@ -1,0 +1,32 @@
+---
+title: OpenShift Terraform variables reference
+sidebarTitle: Variables
+description: Planned Terraform variable reference for LangSmith on OpenShift.
+---
+
+<Warning>
+The OCP Terraform module is in **Preview**. The variables below are indicative based on the planned deployment model and may change before general availability.
+</Warning>
+
+## Variable reference
+
+| Variable | Default | Description |
+|---|---|---|
+| `kubeconfig_path` | _required_ | Path to the kubeconfig file. |
+| `kubeconfig_context` | `""` | Kubernetes context to use. |
+| `langsmith_license_key` | _required_ | LangSmith license key. |
+| `langsmith_hostname` | _required_ | FQDN for the LangSmith UI. |
+| `blob_storage_type` | `minio` | One of `minio`, `odf`, or `external-s3`. |
+| `deploy_langsmith` | `true` | Deploy the LangSmith Helm chart (Pass 2). |
+| `enable_langsmith_deployments` | `false` | Enable LangSmith Deployment (Pass 3). |
+
+## Key differences from AKS / GKE / EKS
+
+| Concern | AKS / GKE / EKS | OCP |
+|---|---|---|
+| Ingress | NGINX / Envoy / ALB | OpenShift Route or Gateway API |
+| Security context | Standard pod security | SCC (Security Context Constraints) |
+| Storage | Cloud-native CSI | ODF / Rook-Ceph or in-cluster MinIO |
+| Identity | Workload Identity / IRSA | OpenShift service account tokens |
+| Operators | Helm-only | OLM (Operator Lifecycle Manager) |
+| DNS | Cloud DNS / external-dns | nip.io (POC) / custom domain (prod) |
