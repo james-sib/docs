@@ -300,7 +300,7 @@ class MessagesState(TypedDict):
 from langchain.messages import SystemMessage
 
 
-def llm_call(state: dict):
+def llm_call(state: MessagesState):
     """LLM decides whether to call a tool or not"""
 
     return {
@@ -323,7 +323,7 @@ def llm_call(state: dict):
 from langchain.messages import ToolMessage
 
 
-def tool_node(state: dict):
+def tool_node(state: MessagesState):
     """Performs the tool call"""
 
     result = []
