@@ -360,7 +360,6 @@ Do **not** do this:
 Mutation in place, such as modifying `state.x` in `beforeAgent`, mutating a shared variable in `beforeAgent`, or changing other shared values in hooks, can lead to subtle bugs and race conditions because many operations run concurrently (subagents, parallel tools, and parallel invocations on different threads).
 
 
-For full details on extending state with custom properties, see [Custom middleware - Custom state schema](/oss/javascript/langchain/middleware/custom#custom-state-schema).
 If you must use mutation in custom middleware, consider what happens when subagents, parallel tools, or concurrent agent invocations run at the same time.
 </Warning>
 
