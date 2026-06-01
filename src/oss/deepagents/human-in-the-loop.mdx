@@ -40,6 +40,7 @@ The `interrupt_on` parameter accepts a dictionary mapping tool names to interrup
 - **`True`**: Enable interrupts with default behavior (approve, edit, reject, respond allowed)
 - **`False`**: Disable interrupts for this tool
 - **`{"allowed_decisions": [...]}`**: Custom configuration with specific allowed decisions
+- **`InterruptOnConfig(..., when=<predicate>)`**: Conditionally interrupt based on a per-call predicate (Python only)
 
 :::python
 <HitlBasicConfigPy />
@@ -89,6 +90,52 @@ const interruptOn = {
 };
 ```
 :::
+
+## Conditional interrupts with `when`
+
+The `when` parameter on `InterruptOnConfig` lets you add a per-call predicate that dynamically controls whether an interrupt fires for a given tool invocation. When `when` returns `False`, the tool call is auto-approved and execution continues without prompting a human. When it returns `True` (or when `when` is omitted), the normal interrupt behaviour applies.
+
+This is useful when you want to interrupt only for high-risk invocations of a tool, rather than every call.
+
+:::python
+```python
+from deepagents import create_deep_agent
+from langchain.agents.middleware import InterruptOnConfig
+from langgraph.checkpoint.memory import MemorySaver
+
+checkpointer = MemorySaver()
+
+agent = create_deep_agent(
+    model="google_genai:gemini-3.5-flash",
+    tools=[delete_file],
+    interrupt_on={
+        # Only interrupt delete_file when the path starts with /etc
+        "delete_file": InterruptOnConfig(
+            allowed_decisions=["approve", "reject"],
+            when=lambda req: req.tool_call["args"].get("path", "").startswith("/etc"),
+        ),
+    },
+    checkpointer=checkpointer,
+)
+```
+:::
+
+:::js
+```typescript
+// The `when` predicate is currently only supported in Python.
+```
+:::
+
+The predicate receives a `ToolCallRequest` object with the following fields:
+
+| Field | Description |
+|-------|-------------|
+| `tool_call` | The raw tool call dict: `{"name": ..., "args": ..., "id": ...}` |
+| `tool` | `None` — no `BaseTool` instance is available at interrupt time |
+| `state` | Current agent state |
+| `runtime` | A `ToolRuntime` constructed from the node-level `Runtime` |
+
+The `when` field is `NotRequired` and fully backwards-compatible — configs without it behave identically to before.
 
 ## Handle interrupts
 
