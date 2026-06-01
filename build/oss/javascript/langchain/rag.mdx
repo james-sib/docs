@@ -271,7 +271,6 @@ Split blog post into 29 sub-documents.
 ```
 
 
-
 ### Storing documents
 
 Now we need to index our 66 text chunks so that we can search over them at runtime. Following the [semantic search tutorial](/oss/javascript/langchain/knowledge-base), our approach is to [embed](/oss/javascript/integrations/embeddings) the contents of each document split and insert these embeddings into a [vector store](/oss/javascript/integrations/vectorstores). Given an input query, we can then use vector search to retrieve relevant documents.
