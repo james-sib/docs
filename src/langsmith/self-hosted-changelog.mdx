@@ -55,6 +55,7 @@ Follow the [upgrade instructions](/langsmith/self-host-upgrades) to get access t
 ### Infrastructure changes
 
 - **Section renames from the Fleet rename** — several sections were renamed as part of the Agent Builder to [Fleet](/langsmith/fleet) rename (see [Breaking changes](#breaking-changes)). You may need to update service accounts or shift values in your configuration.
+- **LLM auth proxy deployments without a public ingress**: If the LLM auth proxy is only reachable through internal Kubernetes networking, set the required SSRF environment variables before using it. See [Deploy without a public ingress](/langsmith/llm-auth-proxy-self-hosted#deploy-without-a-public-ingress).
 
 ### New features
 
