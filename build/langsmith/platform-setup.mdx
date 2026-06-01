@@ -1,0 +1,69 @@
+---
+title: Set up LangSmith
+sidebarTitle: Set up LangSmith
+mode: wide
+---
+
+This section covers how to host and manage LangSmith infrastructure for [observability](/langsmith/observability), [evaluation](/langsmith/evaluation), and [prompt engineering](/langsmith/prompt-engineering).
+
+## Choose how to set up LangSmith
+
+You can deploy LangSmith in one of two modes:
+- [**Cloud**](/langsmith/cloud): fully managed by LangChain
+- [**Self-hosted**](/langsmith/self-hosted): you manage the full stack within your infrastructure
+
+<Callout>
+The self-hosted deployment option is available on the Enterprise plan. [Get a demo](https://www.langchain.com/contact-sales) to learn more.
+</Callout>
+
+
+<Columns cols={2}>
+  <Card
+    title="Cloud"
+    icon="cloud"
+    iconType="solid"
+    href="/langsmith/cloud"
+    cta="Get started"
+  >
+    Fully managed observability, evaluation, and prompt engineering.
+  </Card>
+
+  <Card
+    title="Self-hosted"
+    icon="server"
+    iconType="solid"
+    href="/langsmith/self-hosted"
+    cta="Run self-hosted"
+  >
+    **(Enterprise)** Full control with observability, evaluation, and prompt engineering in your infrastructure.
+  </Card>
+</Columns>
+
+### Comparison
+
+Refer to the following table for a comparison:
+
+| Feature | **Cloud** | **Self-Hosted** |
+|---------|-----------|-----------------|
+| **Infrastructure location** | LangChain's cloud | Your infrastructure |
+| **Who manages updates** | LangChain | You |
+| **Can deploy agents?** | ✅ Yes | ✅ Yes (with LangSmith Deployment enabled) |
+| **Observability data location** | LangChain cloud | Your infrastructure |
+| **[Pricing](https://www.langchain.com/pricing)** | Plus tier | Enterprise |
+| **Best for** | Quick setup, managed infrastructure | Full control, data isolation |
+
+### Related
+
+- [Plans and Pricing](https://www.langchain.com/pricing)
+- [Observability](/langsmith/observability)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/platform-setup.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
