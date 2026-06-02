@@ -6,6 +6,14 @@ import AgentInvocationThreadAndContextJs from '/snippets/code-samples/agent-invo
 import AgentInvocationThreadAndContextPy from '/snippets/code-samples/agent-invocation-thread-and-context-py.mdx';
 import AgentInvocationThreadIdJs from '/snippets/code-samples/agent-invocation-thread-id-js.mdx';
 import AgentInvocationThreadIdPy from '/snippets/code-samples/agent-invocation-thread-id-py.mdx';
+import AgentsFaultToleranceJs from '/snippets/code-samples/agents-fault-tolerance-js.mdx';
+import AgentsFaultTolerancePy from '/snippets/code-samples/agents-fault-tolerance-py.mdx';
+import AgentsGuardrailsJs from '/snippets/code-samples/agents-guardrails-js.mdx';
+import AgentsGuardrailsPy from '/snippets/code-samples/agents-guardrails-py.mdx';
+import AgentsPlanningDelegationJs from '/snippets/code-samples/agents-planning-delegation-js.mdx';
+import AgentsPlanningDelegationPy from '/snippets/code-samples/agents-planning-delegation-py.mdx';
+import AgentsSteeringJs from '/snippets/code-samples/agents-steering-js.mdx';
+import AgentsSteeringPy from '/snippets/code-samples/agents-steering-py.mdx';
 
 An agent is a model calling tools in a loop until a given task is complete.
 
@@ -261,22 +269,7 @@ See [`SummarizationMiddleware`](https://reference.langchain.com/javascript/langc
 Complex tasks often exceed what one context window can handle. Delegation lets the main agent break work into pieces, hand them to subagents that each run in their own isolated context, and stay focused on coordination rather than execution. Work can run in parallel; the main agent's context stays clean.
 
 
-```typescript
-import { createAgent, todoListMiddleware } from "langchain";
-import { FilesystemMiddleware, SubAgentMiddleware, StateBackend } from "deepagents";
-
-const researcher = { name: "researcher", description: "Searches and returns a structured summary.", tools: [search] };
-
-const agent = createAgent({
-  model: "anthropic:claude-sonnet-4-6",
-  tools: [search],
-  middleware: [
-    new FilesystemMiddleware({ backend: new StateBackend() }),
-    todoListMiddleware(),
-    new SubAgentMiddleware({ backend: new StateBackend(), subagents: [researcher] }),
-  ],
-});
-```
+<AgentsPlanningDelegationJs />
 
 
 See [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSubAgentMiddleware), [Subagents](/oss/javascript/deepagents/subagents).
@@ -286,54 +279,39 @@ See [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents
 Agents in production encounter failures that rarely appear in development: rate limits, model timeouts, transient API errors. Fault tolerance middleware handles these at the infrastructure level so your tools and business logic don't need try/catch around every call.
 
 
-```typescript
-import { createAgent, modelRetryMiddleware, toolRetryMiddleware } from "langchain";
-
-const agent = createAgent({
-  model: "anthropic:claude-sonnet-4-6",
-  tools: [search],
-  middleware: [modelRetryMiddleware({ maxRetries: 3 }), toolRetryMiddleware({ maxRetries: 2 })],
-});
-```
+<AgentsFaultToleranceJs />
 
 
-See [`ModelRetryMiddleware`](https://reference.langchain.com/javascript/langchain/index/modelRetryMiddleware), [`ToolRetryMiddleware`](https://reference.langchain.com/javascript/langchain/index/toolRetryMiddleware), [Prebuilt middleware](/oss/javascript/langchain/middleware/built-in).
+
+
+See [`modelRetryMiddleware`](https://reference.langchain.com/javascript/langchain/index/modelRetryMiddleware), [`toolRetryMiddleware`](https://reference.langchain.com/javascript/langchain/index/toolRetryMiddleware), [Prebuilt middleware](/oss/javascript/langchain/middleware/built-in).
+
 
 ### Guardrails
 
 Some policies can't live in a prompt — they need to be enforced deterministically regardless of what the model does. Guardrails intercept data as it flows through the agent loop, applying compliance rules or content policies before tool results reach the model's context.
 
 
-```typescript
-import { createAgent, piiMiddleware } from "langchain";
-
-const agent = createAgent({
-  model: "anthropic:claude-sonnet-4-6",
-  tools: [search],
-  middleware: [piiMiddleware("email")],
-});
-```
+<AgentsGuardrailsJs />
 
 
-See [`PIIMiddleware`](https://reference.langchain.com/javascript/langchain/index/piiMiddleware), [Prebuilt middleware](/oss/javascript/langchain/middleware/built-in).
+
+
+See [`piiMiddleware`](https://reference.langchain.com/javascript/langchain/index/piiMiddleware), [Prebuilt middleware](/oss/javascript/langchain/middleware/built-in).
+
 
 ### Steering
 
 Full autonomy isn't always appropriate. Steering lets you place humans at specific decision points — before destructive writes, expensive API calls, or anything requiring judgment — without restructuring your agent. The agent pauses and waits; a human approves, edits, or rejects; execution continues.
 
 
-```typescript
-import { createAgent, humanInTheLoopMiddleware } from "langchain";
-
-const agent = createAgent({
-  model: "anthropic:claude-sonnet-4-6",
-  tools: [search],
-  middleware: [humanInTheLoopMiddleware({ interruptOn: { writeFile: true } })],
-});
-```
+<AgentsSteeringJs />
 
 
-See [`HumanInTheLoopMiddleware`](https://reference.langchain.com/javascript/langchain/middleware/humanInTheLoopMiddleware), [Human-in-the-loop](/oss/javascript/deepagents/human-in-the-loop).
+
+
+See [`humanInTheLoopMiddleware`](https://reference.langchain.com/javascript/langchain/middleware/humanInTheLoopMiddleware), [Human-in-the-loop](/oss/javascript/deepagents/human-in-the-loop).
+
 
 
 <Tip>
