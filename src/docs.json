@@ -1572,6 +1572,7 @@
                         "oss/javascript/deepagents/skills",
                         "oss/javascript/deepagents/sandboxes",
                         "oss/javascript/deepagents/interpreters",
+                        "oss/javascript/deepagents/pre-built-libraries",
                         "oss/javascript/deepagents/profiles",
                         "oss/javascript/deepagents/event-streaming",
                         "oss/javascript/deepagents/streaming"
