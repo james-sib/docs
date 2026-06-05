@@ -62,7 +62,8 @@ QuickJS is the execution boundary for interpreter code. Explicit bridges, such a
 | One or two simple external calls | Normal tool calling |
 | A small program that loops, branches, retries, or aggregates results | Interpreter |
 | Many selected tool calls that should run from code | Interpreter with programmatic tool calling |
-| Reusable helpers used across threads | Interpreter with [interpreter skills](/oss/deepagents/skills#interpreter-skills) |
+| Pre-loaded importable modules for the interpreter | Interpreter with [interpreter libraries](#interpreter-libraries) |
+| Reusable helpers used across threads | Interpreter with [interpreter skills](/oss/deepagents/skills#use-interpreter-skills) |
 | Shell commands, package installs, tests, or full OS filesystem access | [Sandboxes](/oss/deepagents/sandboxes) |
 
 ## Add an interpreter to an agent
@@ -312,6 +313,234 @@ Interpreter skills are [skills](/oss/deepagents/skills) that expose code modules
 
 Interpreter skills are useful when the agent needs reusable helpers for structured data workflows, such as sorting, grouping, scoring, parsing, validating, or aggregating data. For setup details, see [Interpreter skills](/oss/deepagents/skills#interpreter-skills).
 
+:::js
+## Interpreter libraries
+
+Interpreter libraries are pre-loaded modules available inside the interpreter via standard `import` statements. Where interpreter skills are dynamically loaded at runtime based on the agent's judgment, libraries are loaded by the developer at configuration time. You decide what capabilities are available. The agent just imports and uses them.
+
+<Note>
+Interpreter libraries require `@langchain/quickjs>=0.3.0`.
+</Note>
+
+### Library structure
+
+A library is a directory with two files:
+
+```text
+libraries/
+└── my-library/
+    ├── LIBRARY.md
+    └── index.ts
+```
+
+**`LIBRARY.md`** declares metadata in YAML frontmatter and provides documentation in the markdown body:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `name` | Yes | Module name used in `import` statements (e.g., `"swarm"`) |
+| `description` | Yes | One-line summary shown to the agent in its system prompt |
+| `ptcTools` | No | Host-side tools the library needs at runtime (e.g., `[write_file, read_file]`) |
+
+````md
+---
+name: my-library
+description: Helpers for normalizing and scoring order records
+ptcTools: [write_file]
+---
+
+# my-library
+
+## Quick Start
+
+```javascript
+import { normalize, score } from "my-library";
+
+const cleaned = normalize(orders);
+const ranked = score(cleaned, criteria);
+```
+
+## API
+
+### `normalize(orders)`
+...
+````
+
+**`index.ts`** (or `index.js`) is the entrypoint that runs inside the QuickJS sandbox. TypeScript type annotations are stripped automatically. The agent imports from this module with `import { ... } from "my-library"`.
+
+```typescript
+export function normalize(orders) {
+  return orders.map((o) => ({
+    ...o,
+    status: o.status.toLowerCase().trim(),
+  }));
+}
+
+export function score(orders, criteria) {
+  return orders
+    .map((o) => ({ ...o, total: criteria.reduce((s, c) => s + Number(o[c.key] ?? 0) * c.weight, 0) }))
+    .sort((a, b) => b.total - a.total);
+}
+```
+
+### Progressive disclosure
+
+The agent doesn't see full library documentation upfront. When libraries are loaded, the agent's system prompt gets a one-line summary of each (the `description` from frontmatter). The full LIBRARY.md body with API details, examples, and usage notes is available on demand:
+
+```javascript
+const docs = await tools.readFile({
+  file_path: "/libraries/my-library/LIBRARY.md",
+});
+```
+
+This keeps the agent's initial context small. For simple tasks the agent can work from function signatures alone. For complex tasks it pulls up the docs.
+
+### PTC
+
+The `ptcTools` field in LIBRARY.md declares which host-side [programmatic tool call](#programmatic-tool-calling) bridges the library needs. Inside library code, they're available on the `tools` global:
+
+```typescript
+declare const tools: {
+  writeFile?: (args: { file_path: string; content: string }) => Promise<string>;
+};
+
+export async function saveResults(data, path) {
+  await tools.writeFile({
+    file_path: path,
+    content: JSON.stringify(data, null, 2),
+  });
+}
+```
+
+PTC tools from all loaded libraries are merged into one shared set. If library A declares `[write_file]` and library B declares `[read_file]`, both tools are available to both libraries.
+
+### Load a library
+
+Use `loadLibrary` to load a custom library from a directory, then pass it to `createCodeInterpreterMiddleware`:
+
+```typescript
+import { createDeepAgent } from "deepagents";
+import { createCodeInterpreterMiddleware, loadLibrary } from "@langchain/quickjs";
+
+const myLib = await loadLibrary("./libraries/my-library");
+
+const agent = createDeepAgent({
+  model,
+  middleware: [
+    createCodeInterpreterMiddleware({
+      libraries: [myLib],
+    }),
+  ],
+});
+```
+
+The agent can then import from the library in interpreter code:
+
+```javascript
+import { normalize, score } from "my-library";
+
+const cleaned = normalize(orders);
+const ranked = score(cleaned, criteria);
+ranked.slice(0, 5);
+```
+
+### Pre-built libraries
+
+`@langchain/quickjs` ships with pre-built libraries that you can add to any agent. See [Pre-built libraries](/oss/deepagents/pre-built-libraries) for setup and API reference.
+
+| Library | Description |
+| --- | --- |
+| [Swarm](/oss/deepagents/pre-built-libraries#swarm) | Parallel task fan-out with a table-based data model. Three-function API: `create`, `run`, `rows`. |
+
+### Custom libraries
+
+Libraries can import other libraries. This lets you build higher-level abstractions that hide dispatch complexity behind a single function call.
+
+For example, an `evaluator` library can import swarm internally:
+
+```text
+libraries/
+├── evaluator/
+│   ├── LIBRARY.md
+│   └── index.ts
+```
+
+````md
+---
+name: evaluator
+description: Multi-pass evaluation pipeline built on swarm
+ptcTools: [write_file]
+---
+
+# Evaluator
+
+Call `evaluate(candidates, criteria)` to run a full comparison pipeline.
+````
+
+```typescript
+// evaluator/index.ts
+import { create, run, rows } from "swarm";
+
+export async function evaluate(candidates, criteria, options) {
+  const table = await create({
+    tasks: candidates.map((name, i) => ({ id: `c${i}`, name })),
+  });
+
+  await run(table.id, {
+    instruction: "Rate {name} on: " + criteria.map((c) => c.name).join(", "),
+    responseSchema: scoringSchema,
+  });
+
+  const topIds = rankByWeightedScore(await rows(table.id), criteria);
+
+  await run(table.id, {
+    instruction: "Research {name} in depth...",
+    subagentType: "researcher",
+    responseSchema: researchSchema,
+    filter: { column: "id", in: topIds },
+  });
+
+  await tools.writeFile({
+    file_path: "/evaluation/rankings.json",
+    content: JSON.stringify(await rows(table.id), null, 2),
+  });
+}
+```
+
+Load both libraries together:
+
+```typescript
+import { createCodeInterpreterMiddleware, swarm, loadLibrary } from "@langchain/quickjs";
+
+const swarmLib = swarm({ defaultModel, subagents: [...] });
+const evaluatorLib = await loadLibrary("./libraries/evaluator");
+
+const agent = createDeepAgent({
+  model,
+  middleware: [
+    createCodeInterpreterMiddleware({
+      libraries: [swarmLib, evaluatorLib],
+    }),
+  ],
+});
+```
+
+The agent writes one call and the library handles everything:
+
+```javascript
+import { evaluate } from "evaluator";
+
+await evaluate(
+  ["Rust", "Go", "Python", "TypeScript"],
+  [
+    { name: "Performance", weight: 0.3 },
+    { name: "Developer experience", weight: 0.4 },
+    { name: "Ecosystem", weight: 0.3 },
+  ],
+  { topN: 3 },
+);
+```
+:::
+
 :::python
 ## Snapshots and time travel
 
@@ -432,4 +661,5 @@ Every tool you expose through PTC is an outside capability that interpreter code
 | `maxResultChars` | `4000` | Maximum characters retained from console output, result, and error strings. |
 | `toolName` | `"eval"` | Name of the interpreter tool exposed to the model. |
 | `captureConsole` | `true` | Whether `console.log`, `console.warn`, and `console.error` output is captured. |
+| `libraries` | omitted | Array of `InterpreterLibrary` objects to pre-load into the interpreter. |
 :::
