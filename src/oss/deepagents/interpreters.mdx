@@ -322,81 +322,38 @@ Interpreter libraries are pre-loaded modules available inside the interpreter vi
 Interpreter libraries require `@langchain/quickjs>=0.3.0`.
 </Note>
 
-### Library structure
+### The InterpreterLibrary interface
 
-A library is a directory with two files:
+Each library is an object with the following fields:
 
-```text
-libraries/
-└── my-library/
-    ├── LIBRARY.md
-    └── index.ts
-```
-
-**`LIBRARY.md`** declares metadata in YAML frontmatter and provides documentation in the markdown body:
-
-| Field | Required | Description |
+| Field | Type | Description |
 | --- | --- | --- |
-| `name` | Yes | Module name used in `import` statements (e.g., `"swarm"`) |
-| `description` | Yes | One-line summary shown to the agent in its system prompt |
-| `ptcTools` | No | Host-side tools the library needs at runtime (e.g., `[write_file, read_file]`) |
-
-````md
----
-name: my-library
-description: Helpers for normalizing and scoring order records
-ptcTools: [write_file]
----
-
-# my-library
-
-## Quick Start
-
-```javascript
-import { normalize, score } from "my-library";
-
-const cleaned = normalize(orders);
-const ranked = score(cleaned, criteria);
-```
-
-## API
-
-### `normalize(orders)`
-...
-````
-
-**`index.ts`** (or `index.js`) is the entrypoint that runs inside the QuickJS sandbox. TypeScript type annotations are stripped automatically. The agent imports from this module with `import { ... } from "my-library"`.
+| `name` | `string` | Module name used in `import` statements (e.g., `"my-library"`) |
+| `description` | `string` | One-line summary shown to the agent in its system prompt |
+| `ptcTools` | `(string \| StructuredToolInterface)[]` | Host-side tools the library needs at runtime (e.g., `["write_file"]`) |
+| `source` | `string` | Entrypoint source code that runs inside the QuickJS sandbox |
+| `instructions` | `string` | Usage documentation injected into the agent's system prompt |
+| `files` | `Map<string, string>` | Optional additional source files the entrypoint can import |
 
 ```typescript
-export function normalize(orders) {
-  return orders.map((o) => ({
-    ...o,
-    status: o.status.toLowerCase().trim(),
-  }));
-}
+import type { InterpreterLibrary } from "@langchain/quickjs";
 
-export function score(orders, criteria) {
-  return orders
-    .map((o) => ({ ...o, total: criteria.reduce((s, c) => s + Number(o[c.key] ?? 0) * c.weight, 0) }))
-    .sort((a, b) => b.total - a.total);
-}
+const myLib: InterpreterLibrary = {
+  name: "my-library",
+  description: "Helpers for normalizing and scoring order records",
+  ptcTools: ["write_file"],
+  source: fs.readFileSync("./libraries/my-library/index.ts", "utf-8"),
+  instructions: fs.readFileSync("./libraries/my-library/INSTRUCTIONS.md", "utf-8"),
+};
 ```
 
-### Progressive disclosure
+**Source code** can be written in TypeScript — type annotations are stripped automatically before execution. The agent imports from the library with `import { ... } from "my-library"`.
 
-The agent doesn't see full library documentation upfront. When libraries are loaded, the agent's system prompt gets a one-line summary of each (the `description` from frontmatter). The full LIBRARY.md body with API details, examples, and usage notes is available on demand:
-
-```javascript
-const docs = await tools.readFile({
-  file_path: "/libraries/my-library/LIBRARY.md",
-});
-```
-
-This keeps the agent's initial context small. For simple tasks the agent can work from function signatures alone. For complex tasks it pulls up the docs.
+**Instructions** are injected into the agent's system prompt so the agent knows how to use the library. Write these as markdown with a quick start example and API reference.
 
 ### PTC
 
-The `ptcTools` field in LIBRARY.md declares which host-side [programmatic tool call](#programmatic-tool-calling) bridges the library needs. Inside library code, they're available on the `tools` global:
+The `ptcTools` field declares which host-side [programmatic tool call](#programmatic-tool-calling) bridges the library needs. Inside library code, they're available on the `tools` global:
 
 ```typescript
 declare const tools: {
@@ -411,17 +368,25 @@ export async function saveResults(data, path) {
 }
 ```
 
-PTC tools from all loaded libraries are merged into one shared set. If library A declares `[write_file]` and library B declares `[read_file]`, both tools are available to both libraries.
+PTC tools from all loaded libraries are merged into one shared set. If library A declares `["write_file"]` and library B declares `["read_file"]`, both tools are available to both libraries.
 
 ### Load a library
 
-Use `loadLibrary` to load a custom library from a directory, then pass it to `createCodeInterpreterMiddleware`:
+Pass library objects to `createCodeInterpreterMiddleware`:
 
 ```typescript
+import * as fs from "node:fs";
 import { createDeepAgent } from "deepagents";
-import { createCodeInterpreterMiddleware, loadLibrary } from "@langchain/quickjs";
+import { createCodeInterpreterMiddleware } from "@langchain/quickjs";
+import type { InterpreterLibrary } from "@langchain/quickjs";
 
-const myLib = await loadLibrary("./libraries/my-library");
+const myLib: InterpreterLibrary = {
+  name: "my-library",
+  description: "Helpers for normalizing and scoring order records",
+  ptcTools: ["write_file"],
+  source: fs.readFileSync("./libraries/my-library/index.ts", "utf-8"),
+  instructions: fs.readFileSync("./libraries/my-library/INSTRUCTIONS.md", "utf-8"),
+};
 
 const agent = createDeepAgent({
   model,
@@ -443,38 +408,19 @@ const ranked = score(cleaned, criteria);
 ranked.slice(0, 5);
 ```
 
-### Prebuilt libraries
+### Interpreter libraries
 
-`@langchain/quickjs` ships with prebuilt libraries that you can add to any agent. See [Prebuilt libraries](/oss/deepagents/pre-built-libraries) for setup and API reference.
+`@langchain/quickjs` ships with prebuilt libraries that you can add to any agent. See [Interpreter libraries](/oss/deepagents/interpreter-libraries) for setup and API reference.
 
 | Library | Description |
 | --- | --- |
-| [Swarm](/oss/deepagents/pre-built-libraries#swarm) | Parallel task fan-out with a table-based data model. Three-function API: `create`, `run`, `rows`. |
+| [Swarm](/oss/deepagents/interpreter-libraries#swarm) | Parallel task fan-out with a table-based data model. Three-function API: `create`, `run`, `rows`. |
 
 ### Custom libraries
 
 Libraries can import other libraries. This lets you build higher-level abstractions that hide dispatch complexity behind a single function call.
 
 For example, an `evaluator` library can import swarm internally:
-
-```text
-libraries/
-├── evaluator/
-│   ├── LIBRARY.md
-│   └── index.ts
-```
-
-````md
----
-name: evaluator
-description: Multi-pass evaluation pipeline built on swarm
-ptcTools: [write_file]
----
-
-# Evaluator
-
-Call `evaluate(candidates, criteria)` to run a full comparison pipeline.
-````
 
 ```typescript
 // evaluator/index.ts
@@ -509,10 +455,19 @@ export async function evaluate(candidates, criteria, options) {
 Load both libraries together:
 
 ```typescript
-import { createCodeInterpreterMiddleware, swarm, loadLibrary } from "@langchain/quickjs";
+import * as fs from "node:fs";
+import { createCodeInterpreterMiddleware, swarm } from "@langchain/quickjs";
+import type { InterpreterLibrary } from "@langchain/quickjs";
 
 const swarmLib = swarm({ defaultModel, subagents: [...] });
-const evaluatorLib = await loadLibrary("./libraries/evaluator");
+
+const evaluatorLib: InterpreterLibrary = {
+  name: "evaluator",
+  description: "Multi-pass evaluation pipeline built on swarm",
+  ptcTools: ["write_file"],
+  source: fs.readFileSync("./libraries/evaluator/index.ts", "utf-8"),
+  instructions: fs.readFileSync("./libraries/evaluator/INSTRUCTIONS.md", "utf-8"),
+};
 
 const agent = createDeepAgent({
   model,
