@@ -16,14 +16,16 @@ The core value:
 
 ## Configure swarm
 
-The `swarm()` factory takes a default model and a list of named subagent configurations. Each subagent gets its own system prompt, tools, and optional model override.
+The `swarm()` factory returns an interpreter library with no arguments. Subagents are registered on `createDeepAgent` via the `subagents` option — swarm discovers them automatically through a shared pool.
 
 ```typescript
 import { createDeepAgent } from "deepagents";
 import { createCodeInterpreterMiddleware, swarm } from "@langchain/quickjs";
 
-const swarmLib = swarm({
-  defaultModel: "anthropic:claude-sonnet-4-6",
+const swarmLib = swarm();
+
+const agent = createDeepAgent({
+  model,
   subagents: [
     {
       name: "screener",
@@ -38,10 +40,6 @@ const swarmLib = swarm({
       model: "anthropic:claude-opus-4-6",
     },
   ],
-});
-
-const agent = createDeepAgent({
-  model,
   middleware: [
     createCodeInterpreterMiddleware({
       libraries: [swarmLib],
@@ -50,7 +48,7 @@ const agent = createDeepAgent({
 });
 ```
 
-When no model is specified on a subagent, it uses `defaultModel`.
+When no model is specified on a subagent, it inherits the main agent's model.
 
 ## How it works
 
@@ -128,6 +126,7 @@ const result = await run(table.id, {
 | `responseSchema` | required | JSON Schema (type: "object") for structured output. Properties become columns on the row. |
 | `batchSize` | auto | Rows per subagent call. Auto-computed to cap total dispatches at the `concurrency` limit. Can also be a function `(row, rowCount) => number` for dynamic sizing. All values are clamped to [1, 50]. |
 | `concurrency` | `10` | Maximum concurrent dispatches. Clamped to [1, 10]. |
+| `recursionLimit` | `50` | Maximum agentic loop iterations per dispatch. Prevents runaway subagents. Clamped to [1, 150]. Only applies in agent mode. |
 
 **`instruction` vs `context`.** The `instruction` is interpolated per row — `{column}` placeholders are replaced with that row's values, so each subagent gets a different prompt. The `context` is the same for every subagent and goes before the instruction. Use `context` for shared background (project description, coding standards, domain rules) and `instruction` for the per-item task.
 
@@ -161,6 +160,39 @@ await run(table.id, {
   subagentType: "researcher",
   responseSchema: researchSchema,
 });
+```
+
+**Recursion limit.** Each agent-mode dispatch has a budget of agentic loop iterations (default 50, roughly 25 tool-calling turns). When a subagent exhausts its budget, the dispatch is recorded as a failure. The default is appropriate for most tasks. Increase it for tasks that require deep exploration — multi-file code review, research with many web searches, or complex multi-step reasoning.
+
+```javascript
+// Deep code review — subagents may need to trace imports across files
+await run(table.id, {
+  instruction: "Review {file} for security issues, tracing data flow across imports",
+  subagentType: "reviewer",
+  recursionLimit: 100,
+  responseSchema: findingsSchema,
+});
+```
+
+If some dispatches hit the limit while others succeed, retry the failed rows with a higher limit:
+
+```javascript
+const result = await run(table.id, {
+  instruction: "Review {file} for bugs",
+  subagentType: "reviewer",
+  responseSchema: findingsSchema,
+});
+
+// Retry timed-out rows with more headroom
+if (result.failed > 0) {
+  await run(table.id, {
+    instruction: "Review {file} for bugs",
+    subagentType: "reviewer",
+    recursionLimit: 120,
+    responseSchema: findingsSchema,
+    filter: { column: "findings", exists: false },
+  });
+}
 ```
 
 **Return value.** `run()` returns a summary. It never throws due to individual task failures.
