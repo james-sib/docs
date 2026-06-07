@@ -126,7 +126,7 @@ const result = await run(table.id, {
 | `responseSchema` | required | JSON Schema (type: "object") for structured output. Properties become columns on the row. |
 | `batchSize` | auto | Rows per subagent call. Auto-computed to cap total dispatches at the `concurrency` limit. Can also be a function `(row, rowCount) => number` for dynamic sizing. All values are clamped to [1, 50]. |
 | `concurrency` | `10` | Maximum concurrent dispatches. Clamped to [1, 10]. |
-| `recursionLimit` | `50` | Maximum agentic loop iterations per dispatch. Prevents runaway subagents. Clamped to [1, 150]. Only applies in agent mode. |
+| `recursionLimit` | `100` | Maximum agentic loop iterations per dispatch. Prevents runaway subagents. Clamped to [1, 500]. Only applies in agent mode. |
 
 **`instruction` vs `context`.** The `instruction` is interpolated per row — `{column}` placeholders are replaced with that row's values, so each subagent gets a different prompt. The `context` is the same for every subagent and goes before the instruction. Use `context` for shared background (project description, coding standards, domain rules) and `instruction` for the per-item task.
 
@@ -162,7 +162,7 @@ await run(table.id, {
 });
 ```
 
-**Recursion limit.** Each agent-mode dispatch has a budget of agentic loop iterations (default 50, roughly 25 tool-calling turns). When a subagent exhausts its budget, the dispatch is recorded as a failure. The default is appropriate for most tasks. Increase it for tasks that require deep exploration — multi-file code review, research with many web searches, or complex multi-step reasoning.
+**Recursion limit.** Each agent-mode dispatch has a budget of agentic loop iterations (default 100, roughly 50 tool-calling turns). When a subagent exhausts its budget, the dispatch is recorded as a failure. The default is appropriate for most tasks including single-file code review and research. Increase it for tasks that require deep exploration — multi-file tracing, exhaustive search, or complex multi-step reasoning.
 
 ```javascript
 // Deep code review — subagents may need to trace imports across files
