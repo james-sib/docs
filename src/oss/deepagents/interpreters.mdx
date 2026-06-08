@@ -458,14 +458,10 @@ export async function evaluate(candidates, criteria, options) {
 }
 ```
 
-Load both libraries together:
+Load both libraries together. Subagents referenced by the library (`researcher`) are registered on `createDeepAgent`:
 
 ```typescript
-import * as fs from "node:fs";
-import { createCodeInterpreterMiddleware, swarm } from "@langchain/quickjs";
-import type { InterpreterLibrary } from "@langchain/quickjs";
-
-const swarmLib = swarm({ defaultModel, subagents: [...] });
+const swarmLib = swarm();
 
 const evaluatorLib: InterpreterLibrary = {
   name: "evaluator",
@@ -477,11 +473,10 @@ const evaluatorLib: InterpreterLibrary = {
 
 const agent = createDeepAgent({
   model,
-  middleware: [
-    createCodeInterpreterMiddleware({
-      libraries: [swarmLib, evaluatorLib],
-    }),
+  subagents: [
+    { name: "researcher", description: "Researches a topic in depth", systemPrompt: "..." },
   ],
+  middleware: [createCodeInterpreterMiddleware({ libraries: [swarmLib, evaluatorLib] })],
 });
 ```
 
