@@ -1,7 +1,9 @@
 <CodeGroup>
     ```ts Google
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -19,20 +21,33 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "google-genai:gemini-3.5-flash" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 
     ```ts OpenAI
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -50,20 +65,33 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "openai:gpt-5.4" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 
     ```ts Anthropic
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -81,20 +109,33 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "anthropic:claude-sonnet-4-6" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 
     ```ts OpenRouter
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -112,20 +153,33 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "openrouter:anthropic/claude-sonnet-4-6" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 
     ```ts Fireworks
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -143,20 +197,33 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "fireworks:accounts/fireworks/models/qwen3p5-397b-a17b" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 
     ```ts Baseten
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -174,20 +241,33 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "baseten:zai-org/GLM-5" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 
     ```ts Ollama
     import { ChatOpenAI } from "@langchain/openai";
+    import { ToolMessage } from "@langchain/core/messages";
     import { createAgent, tool } from "langchain";
+    import { MemorySaver } from "@langchain/langgraph";
     import * as z from "zod";
     
     const fetchOrderStatus = tool(
@@ -205,14 +285,25 @@
     const agent = createAgent({
       model: new ChatOpenAI({ model: "ollama:devstral-2" }),
       tools: [fetchOrderStatus],
+      checkpointer: new MemorySaver(),
     });
     
-    const result = await agent.invoke({
-      messages: [
-        { role: "user", content: "What is the status of order #12345?" },
-      ],
-    });
+    const config = { configurable: { thread_id: crypto.randomUUID() } };
+    
+    let result = await agent.invoke(
+      {
+        messages: [
+          { role: "user", content: "What is the status of order #12345?" },
+        ],
+      },
+      config,
+    );
     // The agent returns the tool output directly without another LLM call:
     // "Order 12345 is shipped and will arrive in 2 days."
+    
+    result = await agent.invoke(
+      { messages: [{ role: "user", content: "When will it arrive?" }] },
+      config,
+    );
     ```
 </CodeGroup>
