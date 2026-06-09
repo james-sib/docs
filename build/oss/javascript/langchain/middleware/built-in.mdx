@@ -135,9 +135,10 @@ const agent = createAgent({
 The summarization middleware monitors message token counts and automatically summarizes older messages when thresholds are reached.
 
 **Trigger conditions** control when summarization runs:
-- Single condition object (specified must be met)
-- Array of conditions (any condition must be met - OR logic)
-- Each condition can use `fraction` (of model's context size), `tokens` (absolute count), or `messages` (message count)
+- A single threshold triggers when that threshold is met
+- A trigger clause with multiple thresholds triggers only when all thresholds are met (AND logic)
+- A list of trigger conditions triggers when any item is met (OR logic)
+- Each threshold can use `fraction` (of model's context size), `tokens` (absolute count), or `messages` (message count)
 
 **Keep condition** control how much context to preserve (specify exactly one):
 - `fraction` - Fraction of model's context size to keep
