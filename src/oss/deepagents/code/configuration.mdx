@@ -434,18 +434,37 @@ With this config, switch to the model with `/model xyz:abc-xyz-1` or `--model xy
     Although optional, setting `max_input_tokens` to your model's context window is strongly encouraged. Without it, Deep Agents Code cannot show how full the context is, and auto-summarization falls back to a fixed trigger (around 170,000 tokens) instead of a fraction of your model's window. For a model with a smaller window, summarization may not run before you reach the model's hard limit, so requests start failing once the conversation grows.
 </Note>
 
-Because Deep Agents Code imports the `class_path` class at startup, the package that defines it must be importable from the same environment that runs `dcode`. Built-in providers ship as [install extras](/oss/deepagents/code/providers#quickstart), but a custom or in-house package is not one. Install it into the `dcode` environment with the `--package` flag:
+Because Deep Agents Code imports the `class_path` class at startup, the package that defines it must be importable from the same Python environment that runs `dcode`. This is usually **not** your project virtual environment. If you installed `dcode` with the install script, use `dcode --install` with the `--package` flag to add custom model packages to the `dcode` environment:
 
 ```bash
-dcode --install my_package --package
+dcode --install my-company-models --package
 ```
 
-In a session, run `/install my_package --package --force`. Both install the package alongside `dcode`. If the package is missing or cannot be imported, Deep Agents Code skips the provider and its models do not appear in `/model`.
+In a session, run `/install my-company-models --package` and confirm the prompt. Both install the package alongside `dcode`. If the package is missing or cannot be imported, Deep Agents Code skips the provider and its models do not appear in `/model`.
 
-When you switch to `my_custom:my-model-v1` (via `/model` or `--model`), the model name (`my-model-v1`) is passed as the `model` kwarg:
+For example, imagine your company has an internal package, `my-company-models`, that exposes a LangChain-compatible chat model at `my_company_models.deepagents:CompanyChatModel`. After installing the package into the `dcode` environment, configure it like this:
+
+```toml
+[models.providers.company]
+class_path = "my_company_models.deepagents:CompanyChatModel"
+models = ["company-chat-prod"]
+api_key_env = "COMPANY_MODEL_API_KEY"
+
+[models.providers.company.params]
+region = "us-east-1"
+timeout = 30
+```
+
+Then start `dcode` and select the model with `/model company:company-chat-prod`, or pass it on the command line:
+
+```bash
+dcode --model company:company-chat-prod
+```
+
+When you switch to `company:company-chat-prod` (via `/model` or `--model`), the model name (`company-chat-prod`) is passed as the `model` kwarg:
 
 ```python
-MyChatModel(model="my-model-v1", base_url="...", api_key="...", temperature=0, max_tokens=4096)
+CompanyChatModel(model="company-chat-prod", region="us-east-1", timeout=30)
 ```
 
 <Warning>
