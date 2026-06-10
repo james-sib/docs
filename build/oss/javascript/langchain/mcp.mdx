@@ -349,6 +349,8 @@ const tools = await client.getTools();  // [!code highlight]
 const agent = createAgent({ model: "claude-sonnet-4-6", tools });
 ```
 
+When an MCP tool execution fails (`CallToolResult` with `isError: true`), `@langchain/mcp-adapters` raises a `ToolException`. Wrap tool calls in a try/catch to handle these errors. Unlike the Python adapter, the TypeScript adapter does not return the error to the model as a failed tool message.
+
 
 
 
