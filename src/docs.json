@@ -1309,7 +1309,14 @@
                     {
                       "group": "Capabilities",
                       "pages": [
-                        "oss/python/langgraph/persistence",
+                        {
+                          "group": "Persistence",
+                          "root": "oss/python/langgraph/persistence",
+                          "pages": [
+                            "oss/python/langgraph/checkpointers",
+                            "oss/python/langgraph/stores"
+                          ]
+                        },
                         "oss/python/langgraph/fault-tolerance",
                         "oss/python/langgraph/event-streaming",
                         "oss/python/langgraph/streaming",
@@ -1770,7 +1777,14 @@
                     {
                       "group": "Capabilities",
                       "pages": [
-                        "oss/javascript/langgraph/persistence",
+                        {
+                          "group": "Persistence",
+                          "root": "oss/javascript/langgraph/persistence",
+                          "pages": [
+                            "oss/javascript/langgraph/checkpointers",
+                            "oss/javascript/langgraph/stores"
+                          ]
+                        },
                         "oss/javascript/langgraph/event-streaming",
                         "oss/javascript/langgraph/streaming",
                         "oss/javascript/langgraph/interrupts",
