@@ -485,7 +485,19 @@
                       "oss/python/integrations/chat/index",
                       "oss/python/integrations/tools/index",
                       "oss/python/integrations/middleware/index",
-                      "oss/python/integrations/sandboxes/index",
+                      {
+                        "group": "Sandboxes",
+                        "pages": [
+                          "oss/python/integrations/sandboxes/index",
+                          "oss/python/integrations/sandboxes/langsmith",
+                          "oss/python/integrations/sandboxes/aws",
+                          "oss/python/integrations/sandboxes/daytona",
+                          "oss/python/integrations/sandboxes/e2b",
+                          "oss/python/integrations/sandboxes/modal",
+                          "oss/python/integrations/sandboxes/runloop",
+                          "oss/python/integrations/sandboxes/vercel"
+                        ]
+                      },
                       "oss/python/integrations/checkpointers/index",
                       "oss/python/integrations/retrievers/index",
                       "oss/python/integrations/splitters/index",
