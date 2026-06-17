@@ -80,6 +80,7 @@ const agent = await createDeepAgent({
 | `middleware` | Extra middleware appended to the [default stack](#default-stack-main-agent) |
 | `interruptOn` | Pause before tool calls for human approval |
 | `responseFormat` | Structured output schema |
+| [`contextSchema`](/oss/javascript/deepagents/context-engineering#runtime-context) | Per-run runtime context schema (user IDs, API keys, feature flags) |
 
 For the full parameter list, see the [`createDeepAgent`](https://reference.langchain.com/javascript/deepagents/types/CreateDeepAgentParams) API reference. To compose a fully custom harness from scratch, see [Configure the harness](/oss/javascript/langchain/agents#configure-the-harness).
 
