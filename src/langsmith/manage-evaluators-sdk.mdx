@@ -6,7 +6,7 @@ icon: "code"
 tag: "SDK"
 ---
 
-Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com), the same as evaluators created in the UI. You can attach them to tracing projects and datasets to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations).
+Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com), the same as [evaluators created in the UI](/langsmith/evaluators#create-an-evaluator-in-the-ui). You can attach them to tracing projects and datasets to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations).
 
 <Callout icon="code">
 This guide uses the Python and TypeScript SDKs. For installation and setup, refer to the [Python SDK documentation](https://reference.langchain.com/python/langsmith) and [TypeScript SDK documentation](https://reference.langchain.com/javascript/modules/langsmith.html).
@@ -16,15 +16,10 @@ This guide uses the Python and TypeScript SDKs. For installation and setup, refe
 
 Managing evaluators through the SDK requires:
 
-{/* TODO(DOC-1271): Replace the version placeholders with the confirmed minimum langsmith versions from Sineha Manivannan. PY_MIN = minimum PyPI version, JS_MIN = minimum npm version. */}
-- Python: `langsmith>=PY_MIN` (PyPI)
-- TypeScript: `langsmith>=JS_MIN` (npm)
+- Python: `langsmith>=0.8.17` (PyPI)
+- TypeScript: `langsmith>=0.7.10` (npm)
 
-<Note>
-In Python, the online evaluator methods are available in the synchronous client only. Async support is not available.
-</Note>
-
-The examples below initialize the client with no arguments, which reads the `LANGSMITH_API_KEY` and `LANGSMITH_ENDPOINT` environment variables. Configure your API key through environment variables rather than hardcoding it.
+The examples below initialize the client with no arguments, so it reads the `LANGSMITH_API_KEY` and `LANGSMITH_ENDPOINT` environment variables. Configure your [API key](/langsmith/create-account-api-key) through environment variables rather than hardcoding it.
 
 ## Create an evaluator
 
