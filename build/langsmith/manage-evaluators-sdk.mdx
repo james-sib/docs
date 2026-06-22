@@ -1,0 +1,323 @@
+---
+title: Manage evaluators with the SDK
+sidebarTitle: Manage evaluators programmatically
+description: Create, retrieve, update, list, and delete LangSmith evaluators programmatically with the SDK.
+icon: "code"
+tag: "SDK"
+---
+
+Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-manage-evaluators-sdk), the same as [evaluators created in the UI](/langsmith/evaluators#create-an-evaluator-in-the-ui). You can attach them to tracing projects and datasets to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations).
+
+<Callout icon="code">
+This guide uses the Python and TypeScript SDKs. For installation and setup, refer to the [Python SDK documentation](https://reference.langchain.com/python/langsmith) and [TypeScript SDK documentation](https://reference.langchain.com/javascript/modules/langsmith.html).
+</Callout>
+
+## Prerequisites
+
+Managing evaluators through the SDK requires:
+
+- Python: `langsmith>=0.8.17` (PyPI)
+- TypeScript: `langsmith>=0.7.10` (npm)
+
+The examples below initialize the client with no arguments, so it reads the `LANGSMITH_API_KEY` and `LANGSMITH_ENDPOINT` environment variables. Configure your [API key](/langsmith/create-account-api-key) through environment variables rather than hardcoding it.
+
+## Create an evaluator
+
+### Code evaluator
+
+<CodeGroup>
+```python Python
+from langsmith import Client
+
+client = Client()
+
+created = client.online_evaluators.create(
+    name="Correctness evaluator",
+    type="code",
+    code_evaluator={
+        "code": "def perform_eval(run, example):\n    return {'score': 1}",
+        "language": "python",
+    },
+)
+evaluator_id = created.evaluator.id
+print("Created evaluator:", evaluator_id)
+```
+```typescript TypeScript
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const created = await client.onlineEvaluators.create({
+  name: "Correctness evaluator",
+  type: "code",
+  code_evaluator: {
+    code: "def perform_eval(run, example):\n    return {'score': 1}",
+    language: "python",
+  },
+});
+const evaluatorId = created.evaluator?.id;
+console.log("Created evaluator:", evaluatorId);
+```
+</CodeGroup>
+
+### LLM-as-a-judge evaluator
+
+An LLM-as-a-judge evaluator references a prompt from the [prompt hub](/langsmith/prompt-engineering-quickstart) and maps your run or example fields to the prompt variables.
+
+<CodeGroup>
+```python Python
+created = client.online_evaluators.create(
+    name="LLM judge",
+    type="llm",
+    llm_evaluator={
+        "prompt_repo_handle": "my-judge-prompt",
+        "commit_hash_or_tag": "latest",
+        "variable_mapping": {
+            "input": "inputs.question",
+            "output": "outputs.answer",
+            "reference": "reference.answer",
+        },
+    },
+)
+evaluator_id = created.evaluator.id
+```
+```typescript TypeScript
+const created = await client.onlineEvaluators.create({
+  name: "LLM judge",
+  type: "llm",
+  llm_evaluator: {
+    prompt_repo_handle: "my-judge-prompt",
+    commit_hash_or_tag: "latest",
+    variable_mapping: {
+      input: "inputs.question",
+      output: "outputs.answer",
+      reference: "reference.answer",
+    },
+  },
+});
+const evaluatorId = created.evaluator?.id;
+```
+</CodeGroup>
+
+## Retrieve an evaluator
+
+<CodeGroup>
+```python Python
+evaluator = client.online_evaluators.retrieve(evaluator_id)
+print(evaluator.name)
+print(evaluator.type)
+print(evaluator.feedback_keys)
+print(evaluator.run_rules)
+```
+```typescript TypeScript
+const evaluator = await client.onlineEvaluators.retrieve(evaluatorId);
+console.log(evaluator.name);
+console.log(evaluator.type);
+console.log(evaluator.feedback_keys);
+console.log(evaluator.run_rules);
+```
+</CodeGroup>
+
+## Update an evaluator
+
+Pass the field that matches the evaluator type: `code_evaluator` for a code evaluator or `llm_evaluator` for an LLM-as-a-judge evaluator.
+
+<CodeGroup>
+```python Python
+# Update a code evaluator
+updated = client.online_evaluators.update(
+    evaluator_id,
+    name="Updated correctness evaluator",
+    code_evaluator={
+        "code": "def perform_eval(run, example):\n    return {'score': 0.8}",
+        "language": "python",
+    },
+)
+print(updated.evaluator.name if updated.evaluator else None)
+
+# Update an LLM-as-a-judge evaluator
+client.online_evaluators.update(
+    evaluator_id,
+    name="Updated LLM judge",
+    llm_evaluator={
+        "prompt_repo_handle": "my-updated-judge-prompt",
+        "commit_hash_or_tag": "main",
+        "variable_mapping": {
+            "input": "inputs.question",
+            "output": "outputs.answer",
+        },
+        "use_corrections_dataset": True,
+        "num_few_shot_examples": 3,
+    },
+)
+```
+```typescript TypeScript
+// Update a code evaluator
+const updated = await client.onlineEvaluators.update(evaluatorId, {
+  name: "Updated correctness evaluator",
+  code_evaluator: {
+    code: "def perform_eval(run, example):\n    return {'score': 0.8}",
+    language: "python",
+  },
+});
+console.log(updated.evaluator?.name);
+
+// Update an LLM-as-a-judge evaluator
+await client.onlineEvaluators.update(evaluatorId, {
+  name: "Updated LLM judge",
+  llm_evaluator: {
+    prompt_repo_handle: "my-updated-judge-prompt",
+    commit_hash_or_tag: "main",
+    variable_mapping: {
+      input: "inputs.question",
+      output: "outputs.answer",
+    },
+    use_corrections_dataset: true,
+    num_few_shot_examples: 3,
+  },
+});
+```
+</CodeGroup>
+
+## List evaluators
+
+Filter by name, type, feedback key, attached resource, or tag value, and sort or paginate the results.
+
+<CodeGroup>
+```python Python
+evaluators = client.online_evaluators.list(
+    feedback_key="correctness",
+    name_contains="judge",
+    resource_id=["project-or-dataset-id"],
+    tag_value_id=["tag-value-id"],
+    type="llm",
+    sort_by="name",
+    sort_by_desc=False,
+    limit=20,
+    offset=0,
+)
+for evaluator in evaluators:
+    print(evaluator.id, evaluator.name, evaluator.type)
+```
+```typescript TypeScript
+const page = await client.onlineEvaluators.list({
+  feedback_key: "correctness",
+  name_contains: "judge",
+  resource_id: ["project-or-dataset-id"],
+  tag_value_id: ["tag-value-id"],
+  type: "llm",
+  sort_by: "name",
+  sort_by_desc: false,
+  limit: 20,
+  offset: 0,
+});
+for (const evaluator of page.evaluators) {
+  console.log(evaluator.id, evaluator.name, evaluator.type);
+}
+
+// Auto-paginate across all pages
+for await (const evaluator of client.onlineEvaluators.list({ type: "llm", limit: 50 })) {
+  console.log(evaluator.id, evaluator.name);
+}
+```
+</CodeGroup>
+
+## Track evaluator spend
+
+Retrieve estimated USD spend and trace counts for your evaluators.
+
+<Note>
+Pass exactly one of `group_by`, `evaluator_id`, `session_id`, or `dataset_id`.
+</Note>
+
+<CodeGroup>
+```python Python
+# Spend for a single evaluator
+spend = client.online_evaluators.spend(
+    period_start="2026-06-15",
+    evaluator_id=evaluator_id,
+)
+for group in spend.groups or []:
+    print(group.evaluator_name, group.total_spend_usd, group.total_trace_count)
+
+# Group spend by evaluator, resource, or run rule
+spend_by_evaluator = client.online_evaluators.spend(
+    period_start="2026-06-15",
+    group_by="evaluator",
+    type="llm",
+)
+```
+```typescript TypeScript
+// Spend for a single evaluator
+const spend = await client.onlineEvaluators.spend({
+  period_start: "2026-06-15",
+  evaluator_id: evaluatorId,
+});
+for (const group of spend.groups ?? []) {
+  console.log(group.evaluator_name, group.total_spend_usd, group.total_trace_count);
+}
+
+// Group spend by evaluator, resource, or run rule
+const spendByEvaluator = await client.onlineEvaluators.spend({
+  period_start: "2026-06-15",
+  group_by: "evaluator",
+  type: "llm",
+});
+```
+</CodeGroup>
+
+## Delete an evaluator
+
+An evaluator cannot be deleted while it is attached to a tracing project or dataset. Set `delete_run_rules` to `true` to delete the run rules that reference the evaluator before deleting the evaluator.
+
+<CodeGroup>
+```python Python
+client.online_evaluators.delete(
+    evaluator_id,
+    delete_run_rules=True,
+)
+```
+```typescript TypeScript
+await client.onlineEvaluators.delete(evaluatorId, {
+  delete_run_rules: true,
+});
+```
+</CodeGroup>
+
+### Bulk delete evaluators
+
+<CodeGroup>
+```python Python
+result = client.online_evaluators.bulk_delete(
+    evaluator_ids=[evaluator_id_1, evaluator_id_2],
+    delete_run_rules=True,
+)
+print("Deleted:", result.succeeded)
+print("Failed:", result.failed)
+```
+```typescript TypeScript
+const result = await client.onlineEvaluators.bulkDelete({
+  evaluator_ids: [evaluatorId1, evaluatorId2],
+  delete_run_rules: true,
+});
+console.log("Deleted:", result.succeeded);
+console.log("Failed:", result.failed);
+```
+</CodeGroup>
+
+## Related
+
+- [Manage evaluators](/langsmith/evaluators): View and manage evaluators in the LangSmith UI.
+- [Set up LLM-as-a-judge online evaluators](/langsmith/online-evaluations-llm-as-judge)
+- [Set up online code evaluators](/langsmith/online-evaluations-code)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/manage-evaluators-sdk.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
