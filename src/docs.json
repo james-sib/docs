@@ -254,7 +254,7 @@
                     ]
                   },
                   {
-                    "group": "Code",
+                    "group": "Deep Agents Code",
                     "pages": [
                       "oss/python/deepagents/code/overview",
                       "oss/python/deepagents/code/memory-and-skills",
@@ -723,7 +723,7 @@
                     ]
                   },
                   {
-                    "group": "Code",
+                    "group": "Deep Agents Code",
                     "pages": [
                       "oss/javascript/deepagents/code/overview",
                       "oss/javascript/deepagents/code/memory-and-skills",
@@ -1262,7 +1262,7 @@
                           "langsmith/experiment-configuration",
                           "langsmith/evaluation-async",
                           "langsmith/repetition",
-                          "langsmith/rate-limiting",
+                          "langsmith/handle-model-rate-limiting",
                           "langsmith/bind-evaluator-to-dataset",
                           "langsmith/evaluate-existing-experiment",
                           "langsmith/local",
@@ -1867,22 +1867,23 @@
                   "langsmith/configure-input-output-preview",
                   "langsmith/manage-trace",
                   "langsmith/export-traces",
+                  "langsmith/trace-query-syntax",
                   "langsmith/query-threads",
                   "langsmith/langsmith-remote-mcp",
-                  "langsmith/langsmith-mcp-server",
-                  {
-                    "group": "Bulk export trace data",
-                    "pages": [
-                      "langsmith/data-export",
-                      "langsmith/data-export-destinations",
-                      "langsmith/data-export-monitor",
-                      "langsmith/data-export-downstream",
-                      "langsmith/big-query-bulk-export"
-                    ]
-                  }
+                  "langsmith/langsmith-mcp-server"
                 ]
               },
               "langsmith/threads",
+              {
+                "group": "Bulk export trace data",
+                "pages": [
+                  "langsmith/data-export",
+                  "langsmith/data-export-destinations",
+                  "langsmith/data-export-monitor",
+                  "langsmith/data-export-downstream",
+                  "langsmith/big-query-bulk-export"
+                ]
+              },
               {
                 "group": "Messages view",
                 "pages": [
@@ -1894,8 +1895,7 @@
                 "group": "Data type reference",
                 "pages": [
                   "langsmith/run-data-format",
-                  "langsmith/feedback-data-format",
-                  "langsmith/trace-query-syntax"
+                  "langsmith/feedback-data-format"
                 ]
               }
             ]
@@ -2225,6 +2225,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/langsmith/rate-limiting",
+      "destination": "/langsmith/handle-model-rate-limiting"
+    },
     {
       "source": "/langsmith/env-var",
       "destination": "/langsmith/env-var-cloud"
