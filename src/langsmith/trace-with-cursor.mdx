@@ -4,9 +4,9 @@ sidebarTitle: Cursor
 description: Capture Cursor agent turns, tool calls, model metadata, token usage, attachments, and subagents in LangSmith.
 ---
 
-The `langsmith-cursor` integration sends [Cursor](https://cursor.com/) agent turns to LangSmith using [Cursor hooks](https://cursor.com/docs/agent/hooks). Use it to inspect prompts, model responses, tool calls, token usage, image and file attachments, and subagent activity from your Cursor workflows.
+Trace [Cursor](https://cursor.com/) agent sessions in LangSmith via [Cursor hooks](https://cursor.com/docs/agent/hooks). Each turn becomes one trace, grouped into a thread per Cursor conversation, which captures prompts, model responses, tool calls, token usage, and subagent activity. Use the traces to debug agent behavior, audit tool calls, track token spend per turn, and compare Cursor runs.
 
-Each agent turn becomes its own trace, grouped into a thread per Cursor conversation.
+The plugin source is available at [`langchain-ai/langsmith-cursor-plugins`](https://github.com/langchain-ai/langsmith-cursor-plugins).
 
 ## Prerequisites
 
@@ -16,13 +16,11 @@ Before setting up tracing, ensure you have:
 - [Node.js](https://nodejs.org/) 22.13 or later. The hooks use the built-in `node:sqlite` module to recover attachments from Cursor's local database.
 - A [LangSmith API key](/langsmith/create-account-api-key).
 
-## Install and enable the integration
+## Install and enable the plugin
 
-Clone the integration repository and build it:
+From the [`langsmith-cursor-plugins`](https://github.com/langchain-ai/langsmith-cursor-plugins) repository, install dependencies and build the hooks:
 
 ```bash
-git clone https://github.com/langchain-ai/langsmith-cursor.git
-cd langsmith-cursor
 pnpm install
 pnpm build
 ```
@@ -177,7 +175,7 @@ Each replica object supports the following fields:
 
 ## What gets traced
 
-The integration listens to Cursor hooks and assembles one trace per agent turn:
+The plugin listens to Cursor hooks and assembles one trace per agent turn:
 
 - **Turns**: each turn becomes its own trace, grouped into a thread using `thread_id = conversation_id`. The trace nests the model run and any tool or subagent runs underneath the turn.
 - **Token usage**: per-turn `usage_metadata` on the model run.
@@ -187,11 +185,11 @@ The integration listens to Cursor hooks and assembles one trace per agent turn:
 - **Subagents**: each subagent appears as a nested chain run with its own tool calls underneath, linked to the parent turn.
 
 <Note>
-The integration does not compute cost locally. Because `ls_model_name` is normalized to a canonical id and `usage_metadata` carries the token breakdown, LangSmith's server-side model price table renders cost in the UI. Auto mode reports `default`, which LangSmith cannot price.
+The plugin does not compute cost locally. Because `ls_model_name` is normalized to a canonical id and `usage_metadata` carries the token breakdown, LangSmith's server-side model price table renders cost in the UI. Auto mode reports `default`, which LangSmith cannot price.
 </Note>
 
 <Warning>
-The integration uploads Cursor conversation data, including prompts, model responses, tool inputs and outputs, and recovered attachments. Do not enable tracing for sessions that contain data you do not want stored in LangSmith.
+The plugin uploads Cursor conversation data, including prompts, model responses, tool inputs and outputs, and recovered attachments. Do not enable tracing for sessions that contain data you do not want stored in LangSmith.
 </Warning>
 
 ### Trace metadata
@@ -211,7 +209,7 @@ Cursor's hooks do not expose stable sources for `user_id`, `sandbox_type`, or `a
 
 ## View traces in LangSmith
 
-Open the configured LangSmith project (default `cursor`) and complete a Cursor turn. The integration uploads one trace per turn with this structure:
+Open the configured LangSmith project (default `cursor`) and complete a Cursor turn. The plugin uploads one trace per turn with this structure:
 
 ```
 Cursor Turn N (chain)
