@@ -108,12 +108,6 @@ The experiments table now displays loading progress bars showing the number of r
 
 - [Sandbox auth proxy](/langsmith/sandbox-auth-proxy) now supports GCP auth flows, so sandbox workloads can reach Google APIs through the proxy.
 
-## Admin and billing
-
-### Administration
-
-- [Organization settings](/langsmith/administration-overview) no longer expose the hidden LCU rate-card admin modal or tenantless routes, so rate-card management stays behind the scenes.
-
 ## Fixes
 
 - The Engine trial modal no longer shows the rough-math LCU bullet, so the pricing copy is less misleading.
@@ -176,6 +170,54 @@ The experiments table now displays loading progress bars showing the number of r
 - Performance improvements for the loading of large traces.
 - Filter values for metadata are now preserved when you reopen a filter dropdown to edit it.
 - Dataset creation now uses a multi-select dropdown for choosing CSV fields.
+
+</Update>
+
+<Update label="February 19, 2026" rss={{ title: "2026-02-19 - Cloud update" }}>
+
+## Datasets and experiments
+
+- You can now pin any experiment as a baseline. The pinned experiment stays at the top of the [Experiments](/langsmith/compare-experiment-results) view and serves as the automatic comparison point for later runs, surfacing performance deltas across every column so improvements and regressions are immediately clear.
+
+</Update>
+
+<Update label="February 17, 2026" rss={{ title: "2026-02-17 - Cloud update" }}>
+
+## Observability
+
+- The [Insights Agent](/langsmith/insights) now supports scheduled reports on daily, weekly, or custom cron intervals, so report generation runs without manual triggering. Time ranges compute dynamically, so a "last 24 hours" report always reflects the most recent window when it runs, not when you configured it.
+
+</Update>
+
+<Update label="February 6, 2026" rss={{ title: "2026-02-06 - Cloud update" }}>
+
+## Tracing
+
+- You can now [configure which parts of a trace's inputs and outputs](/langsmith/configure-input-output-preview) appear in the tracing table, so teams working with custom trace formats can surface the most relevant fields, reduce clutter, and identify traces that need a closer look faster.
+
+</Update>
+
+<Update label="February 5, 2026" rss={{ title: "2026-02-05 - Cloud update" }}>
+
+## Observability
+
+- [Cost tracking](/langsmith/cost-tracking) now extends beyond LLM calls. Submit custom cost metadata for any run, such as an expensive tool call, a third-party API, or a retrieval step, to monitor, debug, and optimize spend across your entire agent stack from a single dashboard.
+
+</Update>
+
+<Update label="December 17, 2025" rss={{ title: "2025-12-17 - Cloud update" }}>
+
+## Annotation and human feedback
+
+- New pairwise [annotation queues](/langsmith/annotation-queues) let reviewers compare two runs side by side and choose whether option A is better, option B is better, or the two are equal across rubric items. LangSmith automatically pairs runs between two experiments and manages queues, reviewer assignments, and trace access, so you can run A/B evaluations across agents, prompts, and models, including for subjective dimensions like tone, correctness, usefulness, or style.
+
+</Update>
+
+<Update label="December 10, 2025" rss={{ title: "2025-12-10 - Cloud update" }}>
+
+## Observability
+
+- LangSmith Fetch, a new command-line tool, brings LangSmith traces directly into your terminal, coding environment, or IDE. Install it with `pip install langsmith-fetch`, then retrieve traces with filters such as `--limit`, `--after`, and `--last-n-minutes`, or bulk-export traces and threads to files for analysis, scripting, or dataset creation.
 
 </Update>
 
