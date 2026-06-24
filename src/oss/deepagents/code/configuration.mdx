@@ -155,6 +155,8 @@ DEEPAGENTS_CODE_OPENAI_API_KEY=sk-xxxx dcode -n "..."
 
 This layering exists for the common case where your machine already exports a plain provider variable for some other purpose — a shared `OPENAI_API_KEY` used by other tools, scripts, or CI — that you do not want Deep Agents Code to reuse. An app-stored key or a `DEEPAGENTS_CODE_`-prefixed variable gives Deep Agents Code its own value while leaving the unprefixed one untouched for everything else, so the two never mix.
 
+This order applies to a single provider's API key. The `openai` and `openai_codex` providers are independent: `OPENAI_API_KEY` belongs to `openai`, while `openai_codex` uses a ChatGPT sign-in, so the two never compete—the model you select decides which is used. See [Sign in with ChatGPT](/oss/deepagents/code/providers#sign-in-with-chatgpt) for how they interact, including which one a fresh launch defaults to.
+
 Each provider's API key and its endpoint (`base_url`) resolve as a pair from the same source. See [Endpoints, keys, and gateways](#endpoints-keys-and-gateways).
 
 ### Enable web search with Tavily

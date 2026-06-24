@@ -113,6 +113,12 @@ Your sign-in persists across sessions. To check your status or sign out, run `/a
     `openai_codex` is separate from `openai`. To use OpenAI models with a standard API key instead, use the regular `openai` provider (e.g. `/model openai:gpt-5.5`).
 </Note>
 
+<Warning>
+    Being signed into `openai_codex` and having an `OPENAI_API_KEY` set are not mutually exclusive—they are independent credentials for two separate providers, and the model you select decides which one is used. A Codex model (`openai_codex:...`) always authenticates with your ChatGPT sign-in and never uses `OPENAI_API_KEY`; an `openai:...` model always uses the API key.
+
+    The one place this matters is the startup default. [Environment auto-detection](#switch-models) only checks `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, and `GOOGLE_CLOUD_PROJECT`—**not** your ChatGPT sign-in. So if you have both set and no `--model`, `[models].default`, or `[models].recent`, a fresh launch defaults to `openai:gpt-5.5` (the API key), not Codex. To make Codex your default, set `[models].default = "openai_codex:<model>"` in `~/.deepagents/config.toml` or pass `--model openai_codex:<model>`.
+</Warning>
+
 :::
 
 ### Model routers and proxies
@@ -183,6 +189,8 @@ To switch models in Deep Agents Code, either:
     4. **Environment auto-detection**: falls back to the first available startup credential, checked in order: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `GOOGLE_CLOUD_PROJECT` (Vertex AI).
 
     This startup fallback intentionally checks only those four credentials. Other supported providers (for example, Groq) are still available via `--model`, `/model`, and saved defaults (`[models].default` / `[models].recent`).
+
+    Auto-detection does **not** consider an [`openai_codex` ChatGPT sign-in](#sign-in-with-chatgpt). If you are signed into Codex but also have `OPENAI_API_KEY` set, a fresh launch with no saved default selects `openai`, not `openai_codex`. Set `[models].default = "openai_codex:<model>"` or pass `--model openai_codex:<model>` to make Codex your default.
 </Accordion>
 
 ### Which models appear in the switcher
