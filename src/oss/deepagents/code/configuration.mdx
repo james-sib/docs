@@ -215,7 +215,7 @@ At startup, Deep Agents Code reads the nearest project `.env`, found by searchin
 
 All Deep Agents Code-specific environment variables use a `DEEPAGENTS_CODE_` prefix (e.g., `DEEPAGENTS_CODE_AUTO_UPDATE`, `DEEPAGENTS_CODE_DEBUG`). See the [environment variable reference](#environment-variable-reference) for the full list.
 
-The prefix also works as an override mechanism for any environment variable Deep Agents Code reads, including third-party credentials. Deep Agents Code checks `DEEPAGENTS_CODE_{NAME}` first, then falls back to `{NAME}`:
+The prefix also works as an override mechanism for most environment variables Deep Agents Code reads, including third-party credentials. Deep Agents Code checks `DEEPAGENTS_CODE_{NAME}` first, then falls back to `{NAME}`:
 
 ```bash title="~/.deepagents/.env"
 # Give Deep Agents Code its own value, without affecting other tools
@@ -224,6 +224,8 @@ DEEPAGENTS_CODE_OPENAI_API_KEY=sk-cli-only
 # Or set it empty so Deep Agents Code ignores a key exported in your shell
 DEEPAGENTS_CODE_ANTHROPIC_API_KEY=
 ```
+
+LangSmith endpoint selection is an exception: Deep Agents Code and the LangSmith SDK read the canonical `LANGSMITH_ENDPOINT` / `LANGCHAIN_ENDPOINT` variables. For regional workspaces, put the canonical endpoint in `.env`; for example, EU users can set `LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com`.
 
 ---
 
