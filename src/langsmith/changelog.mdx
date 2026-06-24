@@ -173,7 +173,11 @@ The experiments table now displays loading progress bars showing the number of r
 
 </Update>
 
-<Update label="February 19, 2026" rss={{ title: "2026-02-19 - Cloud update" }}>
+<Update label="February 17-21, 2026" rss={{ title: "2026-02-17 - Cloud update" }}>
+
+## Observability
+
+- The [Insights Agent](/langsmith/insights) now supports scheduled reports on daily, weekly, or custom cron intervals, so report generation runs without manual triggering. Time ranges compute dynamically, so a "last 24 hours" report always reflects the most recent window when it runs, not when you configured it.
 
 ## Datasets and experiments
 
@@ -181,15 +185,11 @@ The experiments table now displays loading progress bars showing the number of r
 
 </Update>
 
-<Update label="February 17, 2026" rss={{ title: "2026-02-17 - Cloud update" }}>
+<Update label="February 5-9, 2026" rss={{ title: "2026-02-05 - Cloud update" }}>
 
 ## Observability
 
-- The [Insights Agent](/langsmith/insights) now supports scheduled reports on daily, weekly, or custom cron intervals, so report generation runs without manual triggering. Time ranges compute dynamically, so a "last 24 hours" report always reflects the most recent window when it runs, not when you configured it.
-
-</Update>
-
-<Update label="February 6, 2026" rss={{ title: "2026-02-06 - Cloud update" }}>
+- [Cost tracking](/langsmith/cost-tracking) now extends beyond LLM calls. Submit custom cost metadata for any run, such as an expensive tool call, a third-party API, or a retrieval step, to monitor, debug, and optimize spend across your entire agent stack from a single dashboard.
 
 ## Tracing
 
@@ -197,27 +197,15 @@ The experiments table now displays loading progress bars showing the number of r
 
 </Update>
 
-<Update label="February 5, 2026" rss={{ title: "2026-02-05 - Cloud update" }}>
-
-## Observability
-
-- [Cost tracking](/langsmith/cost-tracking) now extends beyond LLM calls. Submit custom cost metadata for any run, such as an expensive tool call, a third-party API, or a retrieval step, to monitor, debug, and optimize spend across your entire agent stack from a single dashboard.
-
-</Update>
-
-<Update label="December 17, 2025" rss={{ title: "2025-12-17 - Cloud update" }}>
-
-## Annotation and human feedback
-
-- New pairwise [annotation queues](/langsmith/annotation-queues) let reviewers compare two runs side by side and choose whether option A is better, option B is better, or the two are equal across rubric items. LangSmith automatically pairs runs between two experiments and manages queues, reviewer assignments, and trace access, so you can run A/B evaluations across agents, prompts, and models, including for subjective dimensions like tone, correctness, usefulness, or style.
-
-</Update>
-
-<Update label="December 10, 2025" rss={{ title: "2025-12-10 - Cloud update" }}>
+<Update label="December 10-17, 2025" rss={{ title: "2025-12-10 - Cloud update" }}>
 
 ## Observability
 
 - LangSmith Fetch, a new command-line tool, brings LangSmith traces directly into your terminal, coding environment, or IDE. Install it with `pip install langsmith-fetch`, then retrieve traces with filters such as `--limit`, `--after`, and `--last-n-minutes`, or bulk-export traces and threads to files for analysis, scripting, or dataset creation.
+
+## Annotation and human feedback
+
+- New pairwise [annotation queues](/langsmith/annotation-queues) let reviewers compare two runs side by side and choose whether option A is better, option B is better, or the two are equal across rubric items. LangSmith automatically pairs runs between two experiments and manages queues, reviewer assignments, and trace access, so you can run A/B evaluations across agents, prompts, and models, including for subjective dimensions like tone, correctness, usefulness, or style.
 
 </Update>
 
