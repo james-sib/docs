@@ -1721,6 +1721,7 @@
                 "pages": [
                   "langsmith/engine-overview",
                   "langsmith/engine",
+                  "langsmith/engine-security",
                   "langsmith/engine-webhooks",
                   "langsmith/engine-self-hosted"
                 ]
