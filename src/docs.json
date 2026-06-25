@@ -2087,6 +2087,12 @@
                 ]
               },
               {
+                "tab": "Self-host",
+                "pages": [
+                  "langsmith/self-hosted"
+                ]
+              },
+              {
                 "tab": "Platform setup",
                 "pages": [
                   {
