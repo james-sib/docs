@@ -6,7 +6,7 @@ description: How LangSmith Engine handles your data, the GitHub and model subpro
 
 LangSmith Engine is an AI agent built into LangSmith that improves the agents you build. Engine reviews the trace data already in LangSmith, surfaces and prioritizes issues, and opens pull requests with suggested fixes, proposed prompt changes, and evaluations. For a product overview, see [Engine](/langsmith/engine-overview).
 
-Engine is opt-in, advisory, and never trains on your data, and it runs under LangSmith's SOC 2 Type II controls. This page describes how Engine handles your data, the controls that govern its GitHub and model access, and its compliance posture for Engine in LangSmith Cloud. For how Engine runs in a self-hosted deployment, see [Engine on self-hosted](/langsmith/engine-self-hosted).
+Engine is opt-in, advisory, and never trains on your data, and it runs under LangSmith's SOC 2 Type II and ISO 27001 controls. This page describes how Engine handles your data, the controls that govern its GitHub and model access, and its compliance posture for Engine in LangSmith Cloud. For how Engine runs in a self-hosted deployment, see [Engine on self-hosted](/langsmith/engine-self-hosted).
 
 Engine is delivered as part of LangSmith and inherits LangSmith's security and compliance posture, with additional controls covering the AI inference layer described below. Engine is never on by default and can only be enabled by an [Organization Admin](/langsmith/rbac#organization-admin), for organizations on any plan. For LangSmith's platform-level controls, including data encryption and regional handling, see the [Regions FAQ](/langsmith/regions-faq) and the [LangChain Trust Center](https://trust.langchain.com/).
 
@@ -21,7 +21,7 @@ Engine operates on data you have already chosen to share with LangChain: the tra
 | Model provider (inference) | Only the content required for each analysis task. | Zero data retention with every Engine model provider (see [Model subprocessors](#model-subprocessors)). | Engine reasoning and generation. |
 
 <Note>
-  Engine's read scope may expand over time. This page is updated to reflect material changes. Last reviewed June 5, 2026.
+  Engine's read scope may expand over time. This page is updated to reflect material changes. Last reviewed June 25, 2026.
 </Note>
 
 Trace content sent to Engine can include user messages, tool outputs, and PII, and this content is sent to model subprocessors under zero data retention for each analysis task. To remove sensitive fields before traces reach LangSmith, use [client-side masking](/langsmith/mask-inputs-outputs).
@@ -65,11 +65,7 @@ Engine adds the following controls on top of LangSmith's baseline:
 
 ## Compliance posture
 
-Engine operates under LangSmith's control environment, which is audited annually under SOC 2 Type II. Engine's model subprocessors are listed on the [LangChain Trust Center](https://trust.langchain.com/), which is the authoritative source for procurement and data protection impact assessments.
-
-<Warning>
-  **HIPAA notice: do not enable Engine for PHI workloads.** LangChain does not have Business Associate Agreements (BAAs) with Engine's model subprocessors (OpenAI, Anthropic, Fireworks, and Baseten). Customers operating under a LangChain BAA should leave Engine disabled until provider-level BAAs are established. Contact your LangChain account team for the BAA roadmap. LangChain notifies HIPAA-covered customers when this changes.
-</Warning>
+Engine operates under LangSmith's control environment, which is audited annually under SOC 2 Type II and certified to ISO 27001. Engine's model subprocessors are listed on the [LangChain Trust Center](https://trust.langchain.com/), which is the authoritative source for procurement and data protection impact assessments.
 
 ## Inherent AI risks and mitigations
 
