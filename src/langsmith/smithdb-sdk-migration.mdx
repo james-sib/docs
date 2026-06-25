@@ -1,0 +1,935 @@
+---
+title: Migrate to SmithDB-backed SDK methods
+description: Migrate your existing LangSmith SDK methods to their SmithDB-backed equivalents for faster agent observability.
+noindex: true
+---
+
+
+In May 2026, we released [SmithDB](https://www.langchain.com/blog/introducing-smithdb?utm_source=docs), a new observability database built from the ground up for modern AI agents. Agent traces have grown dramatically in complexity: hundreds of nested spans, multi-modal content, and spans that remain open for hours. General-purpose databases were never designed to handle these patterns at scale. SmithDB addresses this directly, built in Rust on Apache DataFusion and Vortex with purpose-built support for the query patterns that matter most for agent observability: random access, interactive filtering, full-text search, and tree-aware trace reconstruction.
+
+The response from customers has been outstanding. SmithDB delivers leading performance across the key workloads that matter for agent observability and makes core LangSmith experiences up to 12x faster than before.
+
+Today we are excited to bring SmithDB-powered methods to all SDK users.
+
+<Info>
+**Early preview for partner customers**
+
+Minimum SDK version requirements will be published at general availability. We are shipping new methods every week, building toward full feature parity with the existing methods before a general availability release and broader customer communication.
+
+These methods ship in minor SDK releases today. When a future v2 major release completes the transition, code already using these methods will require no further changes.
+
+Your feedback matters. Reach out in Slack or open a support ticket with questions or issues so we can address them quickly and make this migration as seamless as possible.
+</Info>
+
+<Tip>
+**Agent-assisted migration (coming soon)**
+
+We are developing an MCP server and migration skill that can detect existing method usage in your codebase, automatically apply the changes in this guide, and validate the result. Link coming soon.
+</Tip>
+
+## Deployment support
+
+| Deployment | Status |
+|---|---|
+| US SaaS | Available — methods are fully SmithDB-backed |
+| EU and other SaaS regions | Methods are available but not yet backed by SmithDB |
+| Self-hosted | Coming soon — currently not compatible with new methods |
+
+## Select your language
+
+Click a tab below to see language-specific examples throughout this page.
+
+<Tabs>
+  <Tab title="Python">
+    Examples use the Python LangSmith SDK (`langsmith`).
+  </Tab>
+  <Tab title="TypeScript">
+    Examples use the TypeScript LangSmith SDK (`langsmith`).
+  </Tab>
+  <Tab title="Java">
+    Java support is planned. ‼️ Check back for updates.
+  </Tab>
+  <Tab title="Go">
+    Go support is planned. ‼️ Check back for updates.
+  </Tab>
+  <Tab title="cURL">
+    Examples use `curl` against the LangSmith REST API.
+  </Tab>
+</Tabs>
+
+## Query runs
+
+Query runs from a project with optional filtering and field projection. Returns a paginated result set—see [Pagination changes](#common-patterns) for important behavior differences from the existing query methods.
+
+### Code migration
+
+<Tabs>
+  <Tab title="Python">
+    <Note>Requires `langsmith>=x.y.z`. ‼️</Note>
+
+    <CodeGroup>
+    ```python Before
+    from langsmith import Client
+
+    client = Client()
+
+    runs = client.list_runs(
+        project_name="my-project",
+        run_type="llm",
+        filter='and(eq(status, "success"), gt(total_tokens, 100))',
+        limit=100,
+    )
+
+    for run in runs:
+        print(run.id, run.name, run.status)
+    ```
+
+    ```python After
+    from langsmith import Client
+
+    client = Client()
+
+    page = client.runs.query(
+        project_name="my-project",
+        run_type="LLM",
+        filter='and(eq(status, "success"), gt(total_tokens, 100))',
+        selects=["ID", "NAME", "STATUS"],
+    )
+
+    for run in page:
+        print(run["ID"], run["NAME"], run["STATUS"])
+    ```
+    </CodeGroup>
+  </Tab>
+  <Tab title="TypeScript">
+    <Note>Requires `langsmith@>=x.y.z`. ‼️</Note>
+
+    <CodeGroup>
+    ```typescript Before
+    import { Client } from "langsmith";
+
+    const client = new Client();
+
+    const runs = client.listRuns({
+      projectName: "my-project",
+      runType: "llm",
+      filter: 'and(eq(status, "success"), gt(total_tokens, 100))',
+      limit: 100,
+    });
+
+    for await (const run of runs) {
+      console.log(run.id, run.name, run.status);
+    }
+    ```
+
+    ```typescript After
+    import { Client } from "langsmith";
+
+    const client = new Client();
+
+    const page = await client.runs.query({
+      projectName: "my-project",
+      runType: "LLM",
+      filter: 'and(eq(status, "success"), gt(total_tokens, 100))',
+      selects: ["ID", "NAME", "STATUS"],
+    });
+
+    for await (const run of page) {
+      console.log(run["ID"], run["NAME"], run["STATUS"]);
+    }
+    ```
+    </CodeGroup>
+  </Tab>
+  <Tab title="Java">
+    Java support is planned. ‼️
+  </Tab>
+  <Tab title="Go">
+    Go support is planned. ‼️ ‼️
+  </Tab>
+  <Tab title="cURL">
+    <CodeGroup>
+    ```bash Before
+    curl "https://api.smith.langchain.com/api/v1/runs?project_name=my-project&run_type=llm&limit=100" \
+      -H "x-api-key: $LANGSMITH_API_KEY"
+    ```
+
+    ```bash After
+    curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+      -H "x-api-key: $LANGSMITH_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_name": "my-project",
+        "run_type": "LLM",
+        "filter": "and(eq(status, \"success\"), gt(total_tokens, 100))",
+        "selects": ["ID", "NAME", "STATUS"]
+      }'
+    ```
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+### Common patterns
+
+**List all runs in a project**
+
+v2 does not accept a project name directly. Resolve the project UUID with `read_project()` first, then pass it as a string in `project_ids`.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+runs = client.list_runs(project_name="my-project")
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(project_ids=[str(project.id)])
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Selecting fields**
+
+`list_runs` returns a default set of fields without requiring explicit selection. `runs.query` returns only `id` by default — you must declare every field you need via `selects=[...]`. Two renames: `select` → `selects` (plural), and field names are now **uppercase** (`"name"` → `"NAME"`).
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+# returns a default set of fields; no explicit selection needed
+runs = client.list_runs(project_name="my-project")
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+# must explicitly list every field needed; default returns only id
+runs = client.runs.query(
+    project_ids=[str(project.id)],
+    selects=["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
+)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Filter by run type and time range**
+
+Two parameter renames: `start_time` → `min_start_time`, and `run_type` values are now **uppercase** (`"llm"` → `"LLM"`).
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from datetime import datetime, timedelta
+
+from langsmith import Client
+
+client = Client()
+
+runs = client.list_runs(
+    project_name="my-project",
+    start_time=datetime.now() - timedelta(days=1),
+    run_type="llm",
+)
+```
+
+```python After
+from datetime import datetime, timedelta
+
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(
+    project_ids=[str(project.id)],
+    min_start_time=datetime.now() - timedelta(days=1),
+    run_type="LLM",
+)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Filter root runs only**
+
+`is_root=True` is unchanged. Only the project identifier changes: pass `project_ids` instead of `project_name`.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+runs = client.list_runs(project_name="my-project", is_root=True)
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(project_ids=[str(project.id)], is_root=True)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Fetch runs by ID list**
+
+`id=[...]` is renamed to `ids=[...]`. `project_ids` is now required even when filtering by run IDs — v1 allowed omitting the project context.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+runs = client.list_runs(id=["<run-id-1>", "<run-id-2>"])
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(
+    project_ids=[str(project.id)],
+    ids=["<run-id-1>", "<run-id-2>"],
+)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Pagination**
+
+`list_runs` auto-paginates transparently — the SDK fetches 100 runs per API call and advances the cursor internally. Use `itertools.islice()` to stop iteration client-side. `runs.query` exposes pagination explicitly: iterate with `async for` and a `break` to stop. For page-level control, `runs.query` also provides `page.has_next_page()` and `await page.get_next_page()`.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+import itertools
+
+from langsmith import Client
+
+client = Client()
+
+runs = itertools.islice(
+    client.list_runs(project_name="my-project"),
+    150,
+)
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = []
+async for run in client.runs.query(
+    project_ids=[str(project.id)],
+    selects=["ID", "NAME"],
+):
+    runs.append(run)
+    if len(runs) >= 150:
+        break
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Filter runs with errors**
+
+The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+runs = client.list_runs(project_name="my-project", error=True)
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(project_ids=[str(project.id)], has_error=True)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Filter by metadata**
+
+The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check for key presence, or combine with `eq(metadata_value, ...)` to match a specific value.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+runs = client.list_runs(project_name="my-project", filter=filter_str)
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(project_ids=[str(project.id)], filter=filter_str)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Complex boolean filters**
+
+Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+filter_str = (
+    'and(gt(start_time, "2023-07-15T12:34:56Z"),'
+    ' or(neq(status, "error"),'
+    '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
+)
+runs = client.list_runs(project_name="my-project", filter=filter_str)
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+filter_str = (
+    'and(gt(start_time, "2023-07-15T12:34:56Z"),'
+    ' or(neq(status, "error"),'
+    '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
+)
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(project_ids=[str(project.id)], filter=filter_str)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+**Scoped filters: filter, trace_filter, tree_filter**
+
+All three filter parameters are unchanged between v1 and v2. `filter` applies to the matched run, `trace_filter` to the root of its trace, and `tree_filter` to other runs in the trace tree (siblings and children).
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+runs = client.list_runs(
+    project_name="my-project",
+    filter='eq(name, "RetrieveDocs")',
+    trace_filter='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
+    tree_filter='eq(name, "ExpandQuery")',
+)
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+runs = client.runs.query(
+    project_ids=[str(project.id)],
+    filter='eq(name, "RetrieveDocs")',
+    trace_filter='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
+    tree_filter='eq(name, "ExpandQuery")',
+)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+### Parameter renames
+
+Each field uses the idiomatic case for its language:
+
+- **Python:** `snake_case` (e.g., `project_ids`, `min_start_time`)
+- **TypeScript:** `camelCase` (e.g., `projectIds`, `minStartTime`)
+- **cURL:** `snake_case` — JSON body fields match Python names exactly
+- **Java** and **Go:** naming will be confirmed when support is available
+
+<Warning>
+`project_name` is not supported in `runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name: `client.read_project(project_name="my-project").id`
+</Warning>
+
+<Warning>
+`min_start_time` defaults to **1 day ago** when omitted. `list_runs` with no `start_time` returned all historical runs; `runs.query` without `min_start_time` silently scopes the query to the last 24 hours. Pass an explicit `min_start_time` if you need a wider window.
+</Warning>
+
+| Before (`list_runs`) | After (`runs.query`) | Notes |
+|---|---|---|
+| `project_name` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
+| `project_id` | `project_ids` | Now takes a list; mutually exclusive with `reference_dataset_id` |
+| `run_type` | `run_type` | Values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, `"RETRIEVER"`, `"EMBEDDING"`, `"PROMPT"`, `"PARSER"` |
+| `trace_id` | `trace_id` | Unchanged |
+| `reference_example_id` | `reference_examples` | Now takes a list of UUIDs |
+| `query` | *(removed)* | No equivalent |
+| `filter` | `filter` | Syntax unchanged |
+| `trace_filter` | `trace_filter` | Unchanged |
+| `tree_filter` | `tree_filter` | Unchanged |
+| `is_root` | `is_root` | Unchanged |
+| `parent_run_id` | *(removed)* | No equivalent |
+| `start_time` | `min_start_time` | Now an explicit lower bound; defaults to 1 day ago—see warning above |
+| `error` | `has_error` | Renamed |
+| `run_ids` | `ids` | Renamed |
+| `select` | `selects` | Field names are now uppercase (`"NAME"`, `"STATUS"`, etc.) |
+| `limit` | *(removed)* | Use `page_size` for per-request batch size; see [Pagination changes](#common-patterns) |
+| *(not available)* | `max_start_time` | Upper bound for `start_time`; defaults to now |
+| *(not available)* | `page_size` | Per-request result count (default 100, max 1000) |
+| *(not available)* | `reference_dataset_id` | Alternative to `project_ids`; mutually exclusive |
+| *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
+
+### Reponse fields rename
+
+TODO ‼️
+
+## Retrieve a run
+
+Fetch a single run by ID. Returns only the run ID by default—specify a field selection list to retrieve additional data.
+
+### Code migration
+
+<Tabs>
+  <Tab title="Python">
+    <Note>Requires `langsmith>=x.y.z`. Exact minimum version TBD.</Note>
+
+    <CodeGroup>
+    ```python Before
+    from langsmith import Client
+
+    client = Client()
+
+    run = client.read_run(run_id="<run-id>")
+    print(run.name, run.status, run.total_tokens)
+    ```
+
+    ```python After
+    from langsmith import Client
+
+    client = Client()
+
+    run = client.runs.retrieve(
+        run_id="<run-id>",
+        select=["NAME", "STATUS", "TOTAL_TOKENS"],
+    )
+    print(run["NAME"], run["STATUS"], run["TOTAL_TOKENS"])
+    ```
+    </CodeGroup>
+  </Tab>
+  <Tab title="TypeScript">
+    <Note>Requires `langsmith@>=x.y.z`. Exact minimum version TBD.</Note>
+
+    <CodeGroup>
+    ```typescript Before
+    import { Client } from "langsmith";
+
+    const client = new Client();
+
+    const run = await client.readRun("<run-id>");
+    console.log(run.name, run.status, run.totalTokens);
+    ```
+
+    ```typescript After
+    import { Client } from "langsmith";
+
+    const client = new Client();
+
+    const run = await client.runs.retrieve("<run-id>", {
+      select: ["NAME", "STATUS", "TOTAL_TOKENS"],
+    });
+    console.log(run["NAME"], run["STATUS"], run["TOTAL_TOKENS"]);
+    ```
+    </CodeGroup>
+  </Tab>
+  <Tab title="Java">
+    Java support is planned. ‼️
+  </Tab>
+  <Tab title="Go">
+    Go support is planned. ‼️
+  </Tab>
+  <Tab title="cURL">
+    <CodeGroup>
+    ```bash Before
+    curl "https://api.smith.langchain.com/api/v1/runs/<run-id>" \
+      -H "x-api-key: $LANGSMITH_API_KEY"
+    ```
+
+    ```bash After
+    curl "https://api.smith.langchain.com/api/v2/runs/<run-id>?select=NAME&select=STATUS&select=TOTAL_TOKENS" \
+      -H "x-api-key: $LANGSMITH_API_KEY"
+    ```
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+### Common patterns
+
+**Fetch a single run by ID**
+
+v2 requires two additional parameters that `read_run` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `read_project()` first.
+
+<Tabs>
+  <Tab title="Python">
+
+<CodeGroup>
+
+```python Before
+from langsmith import Client
+
+client = Client()
+
+run = client.read_run("<run-id>")
+```
+
+```python After
+from langsmith import Client
+
+client = Client()
+
+project = client.read_project(project_name="my-project")
+run = client.runs.retrieve(
+    run_id="<run-id>",
+    project_id=str(project.id),
+    start_time="2025-01-01T12:00:00Z",
+)
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="TypeScript">
+
+TypeScript examples coming soon.
+
+  </Tab>
+  <Tab title="Java">
+
+Java support is planned.
+
+  </Tab>
+  <Tab title="Go">
+
+Go support is planned.
+
+  </Tab>
+  <Tab title="cURL">
+
+cURL examples coming soon.
+
+  </Tab>
+</Tabs>
+
+### Parameter renames
+
+Each field uses the same naming conventions as above.
+
+<Warning>
+`runs.retrieve` requires two new fields—`project_id` and `start_time`—that `read_run` did not need. Both are required to locate the run in SmithDB.
+</Warning>
+
+| Before (`read_run`) | After (`runs.retrieve`) | Notes |
+|---|---|---|
+| `run_id` | `run_id` | Unchanged |
+| `load_child_runs` | *(removed)* | No equivalent |
+| *(not available)* | `project_id` | **Required**—UUID of the project that owns the run |
+| *(not available)* | `start_time` | **Required**—run's start time (RFC3339), used with `project_id` to locate the run |
+| *(all fields returned by default)* | `selects` | Field projection; defaults to `["ID"]` only; field names are uppercase |
+
+### Reponse fields rename
+
+TODO ‼️
