@@ -78,7 +78,7 @@ conversation                      ← root run (whole conversation; combined aud
 ```
 
 <Note>
-A voice agent has no reliable notion of a "turn". Speakers overlap, interrupt, and trail off. Do not group runs into synthetic turns. Trace the real units instead: the model calls in a cascade, or the event payloads in a speech-to-speech stream.
+Keep the whole conversation in one trace. Do not split it into a separate trace per turn, the thread-level "turn" model common for text chat: a voice conversation's exchanges overlap and interrupt, and splitting them loses the timing and barge-in information between them. Some framework integrations add a `turn` span that groups each exchange *inside* the conversation trace; that grouping run is distinct from a thread-level turn.
 </Note>
 
 For background on grouping related runs, see [Nest traces](/langsmith/nest-traces). To group several separate sessions for one user, use [Threads](/langsmith/threads).
