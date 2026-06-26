@@ -80,3 +80,61 @@ configure_google_adk(
 The integration automatically traces multi-agent workflows including sequential and parallel agent compositions:
 
 <ExampleMultiAgent/>
+
+## Trace ADK Live voice agents
+
+`configure_google_adk()` traces ADK's standard execution paths, but ADK's `Runner.run_live` (the bidirectional streaming voice loop) is not covered by that instrumentation. To trace a Live voice conversation, register `LangSmithLivePlugin` on your `Runner`. The plugin builds the trace from the live event stream: one root run per conversation, with a span per event (transcripts, tool calls, turn boundaries, and interruptions).
+
+For high-level guiding principles on tracing voice agents, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+`LangSmithLivePlugin` requires `langsmith[google-adk]` and a version of `google-adk` with Live support.
+</Note>
+
+Pass the plugin to `Runner(plugins=[...])`. It runs alongside your own `run_live` loop and carries no application logic:
+
+```python
+from google.adk.runners import Runner
+from langsmith.integrations.google_adk import LangSmithLivePlugin
+
+# The project defaults to the LANGSMITH_PROJECT environment variable.
+plugin = LangSmithLivePlugin(project_name="my-adk-voice")
+
+runner = Runner(
+    app_name="voice-app",
+    agent=root_agent,
+    session_service=session_service,
+    plugins=[plugin],
+)
+
+async for event in runner.run_live(
+    user_id=user_id,
+    session_id=session.id,
+    live_request_queue=queue,
+    run_config=run_config,
+):
+    ...  # your audio playback and UI
+```
+
+The plugin produces a trace like this:
+
+```text
+realtime_session                       # root: transcript + audio recording
+├── input_transcription                # user speech
+├── function_call: get_weather
+├── function_response: get_weather
+├── output_transcription               # agent speech
+├── turn_complete
+└── interrupted                        # barge-in
+```
+
+### Attach the conversation audio
+
+To attach a stereo recording of the conversation, feed the plugin the user and agent PCM as you play it. Recording at the playout boundary keeps the recording faithful to what was heard, including speech cut off by a barge-in:
+
+```python
+plugin.record_user_audio(mic_chunk)      # user mic PCM16
+plugin.record_agent_audio(played_chunk)  # agent PCM16 as played
+```
+
+The plugin encodes the merged audio to a WAV and attaches it to the root run when the conversation ends. For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces).
