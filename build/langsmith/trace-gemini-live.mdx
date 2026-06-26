@@ -1,0 +1,117 @@
+---
+title: Trace Gemini Live applications
+sidebarTitle: Gemini Live
+description: Trace Gemini Live voice agents built with the Google Agent Development Kit (ADK) in LangSmith.
+---
+
+Trace your [Gemini Live](https://ai.google.dev/gemini-api/docs/live-api) voice agents, built with the [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/streaming/), to LangSmith with the LangSmith ADK integration. For high-level conventions, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+The ADK Live integration requires `langsmith[google-adk]`. To trace ADK's non-streaming paths (text agents, tools, multi-agent workflows), see [Trace Google ADK applications](/langsmith/trace-with-google-adk).
+</Note>
+
+Gemini Live is a speech-to-speech model that ADK streams to your app as `run_live` events. The integration captures each conversation as a single LangSmith trace, with a span for every meaningful event (transcripts, tool calls, turn boundaries, and interruptions). You register one plugin and do not create any spans yourself. The flood of audio chunks is played but not traced.
+
+<Note>
+`Runner.run_live` is not covered by ADK's standard OpenTelemetry instrumentation, so this plugin is what produces a trace for a Live voice conversation.
+</Note>
+
+## Install
+
+<CodeGroup>
+
+```bash pip
+pip install "langsmith[google-adk]" google-genai
+```
+
+```bash uv
+uv add "langsmith[google-adk]" google-genai
+```
+
+</CodeGroup>
+
+Voice apps also need an audio library such as `sounddevice` for microphone and speaker I/O.
+
+## Set environment variables
+
+```bash .env
+LANGSMITH_API_KEY=<your-langsmith-api-key>
+LANGSMITH_TRACING=true
+LANGSMITH_PROJECT=gemini-live-voice
+GOOGLE_API_KEY=<your-google-api-key>
+```
+
+## Set up tracing
+
+Import `LangSmithLivePlugin` and register it on your `Runner`. It runs alongside your own `run_live` loop, so your loop keeps doing only audio playback and UI:
+
+```python
+from google.adk.agents.run_config import RunConfig, StreamingMode
+from google.adk.runners import Runner
+from google.genai import types as genai_types
+from langsmith.integrations.google_adk import LangSmithLivePlugin
+
+plugin = LangSmithLivePlugin(project_name="gemini-live-voice")
+
+runner = Runner(
+    app_name="voice-app",
+    agent=root_agent,
+    session_service=session_service,
+    plugins=[plugin],
+)
+
+run_config = RunConfig(
+    response_modalities=["AUDIO"],
+    streaming_mode=StreamingMode.BIDI,
+    input_audio_transcription=genai_types.AudioTranscriptionConfig(),
+    output_audio_transcription=genai_types.AudioTranscriptionConfig(),
+)
+
+async for event in runner.run_live(
+    user_id=user_id,
+    session_id=adk_session.id,
+    live_request_queue=queue,
+    run_config=run_config,
+):
+    ...  # play audio, handle barge-in, update the UI
+```
+
+By default the plugin generates a [thread](/langsmith/threads) id per conversation; pass a `thread_id_provider` to supply your own.
+
+<Note>
+Transcription is opt-in. Set both `input_audio_transcription` and `output_audio_transcription` on the `RunConfig`, or the trace has no transcripts.
+</Note>
+
+## Record the conversation audio
+
+Feed the plugin your microphone and playback audio, and it attaches a single stereo recording (user left, agent right) to the trace:
+
+```python
+plugin.record_user_audio(mic_chunk)      # user mic PCM16
+plugin.record_agent_audio(played_chunk)  # agent PCM16 as played
+```
+
+Record the user's microphone capture before resampling it for ADK, and tap the speaker for the agent's audio, so the recording reflects what was actually heard. Feed both channels at the same sample rate (the plugin's `sample_rate`, 24 kHz by default). For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Voice fundamentals" icon="waveform" href="/langsmith/trace-voice-fundamentals">
+    Core conventions for tracing voice agents.
+  </Card>
+  <Card title="Upload files with traces" icon="paperclip" href="/langsmith/upload-files-with-traces">
+    Attach the conversation audio recording to your trace.
+  </Card>
+</CardGroup>
+</content>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/trace-gemini-live.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
