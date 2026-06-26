@@ -2087,12 +2087,6 @@
                 ]
               },
               {
-                "tab": "Self-host",
-                "pages": [
-                  "langsmith/self-hosted"
-                ]
-              },
-              {
                 "tab": "Platform setup",
                 "pages": [
                   {
@@ -2241,6 +2235,14 @@
                   }
                 ]
               }
+            ]
+          },
+          {
+            "item": "Self-host",
+            "icon": "server",
+            "description": "Self-host LangSmith",
+            "pages": [
+              "langsmith/self-hosted"
             ]
           }
         ]
