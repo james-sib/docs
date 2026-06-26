@@ -1,0 +1,188 @@
+---
+title: Connect MCP tools to Managed Deep Agents
+sidebarTitle: Connect tools
+description: Register, connect, and reference MCP tools for Managed Deep Agents.
+---
+
+[Managed Deep Agents](/langsmith/managed-deep-agents-overview) can call external tools that you expose through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro): for example, GitHub, internal services, or third-party APIs. LangSmith manages the connection to each MCP server, including per-user OAuth, so agents authenticate without custom client code.
+
+MCP servers are [workspace-level](/langsmith/administration-overview#workspaces) resources. Register or connect a server before you deploy an agent that references it. View all of your MCP servers in [LangSmith > Settings > MCP Servers](https://smith.langchain.com/settings/workspaces/mcp-servers).
+
+<Note>
+Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
+</Note>
+
+## Prerequisites
+
+- Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
+- A [LangSmith API key](/langsmith/create-account-api-key) for a workspace with private beta access.
+- The `deepagents-cli` package. For install commands and version requirements, see [Install the CLI](/langsmith/managed-deep-agents-quickstart#install-the-cli).
+- An MCP server URL, plus any static headers or OAuth credentials the server requires.
+
+## Quickstart
+
+From a project directory created by [`deepagents init`](/langsmith/managed-deep-agents-cli#initialize-projects), connect a static-header tool and deploy:
+
+```bash
+# 1. Register the MCP server.
+deepagents mcp-servers add --url https://example.com/mcp --name my-tools
+
+# 2. List its tools and copy the printed tools.json snippet.
+deepagents mcp-servers tools my-tools
+
+# 3. Paste the tool entries into tools.json (manual step).
+
+# 4. Deploy the agent.
+deepagents deploy
+```
+
+For an OAuth server, run `deepagents mcp-servers connect <id|name|url>` after the register step and before listing tools. The following sections cover each step in detail.
+
+## Connect tools with the CLI
+
+In the CLI, `add` registers a server and `connect` completes OAuth for a registered server. For all MCP server commands and flags, see the [CLI reference](/langsmith/managed-deep-agents-cli#manage-mcp-servers).
+
+### Add a static-header MCP server
+
+Register a server:
+
+```bash
+deepagents mcp-servers add \
+  --url https://example.com/mcp \
+  --name my-tools
+```
+
+If the server requires static credentials, pass headers:
+
+```bash
+deepagents mcp-servers add \
+  --url https://example.com/mcp \
+  --name my-tools \
+  --header Authorization="Bearer <token>"
+```
+
+Repeat `--header` for multiple headers:
+
+```bash
+deepagents mcp-servers add \
+  --url https://example.com/mcp \
+  --name my-tools \
+  --header Authorization="Bearer <token>" \
+  --header X-Workspace-ID="<workspace-id>"
+```
+
+If the CLI can reach the server, it lists the server's tools after registration and prints a `tools.json` snippet. To skip that step, pass `--no-tools`.
+
+### Add an OAuth MCP server
+
+Register and connect an OAuth MCP server:
+
+```bash
+deepagents mcp-servers add \
+  --url https://example.com/mcp \
+  --name github-tools \
+  --auth-type oauth \
+  --connect
+```
+
+The command runs the full per-user OAuth flow:
+
+1. Registers the MCP server for per-user OAuth.
+2. Prints and opens a verification URL.
+3. Waits while you approve access in the browser.
+4. Confirms the connection once approval completes.
+
+To connect an OAuth MCP server that already exists, run:
+
+```bash
+deepagents mcp-servers connect <id|name|url>
+```
+
+Use `--scope` to request OAuth scopes:
+
+```bash
+deepagents mcp-servers connect <id|name|url> \
+  --scope repo \
+  --scope read:user
+```
+
+Use `--timeout 0` to start the OAuth flow without polling:
+
+```bash
+deepagents mcp-servers connect <id|name|url> --timeout 0
+```
+
+When the command starts an authorization session, it prints the verification URL. Re-run `deepagents mcp-servers connect <id|name|url>` later to complete or reuse the connection.
+
+### List available tools
+
+List the tools exposed by a registered MCP server:
+
+```bash
+deepagents mcp-servers tools <id|name|url>
+```
+
+The command prints each tool name with its first description line, then a `tools.json` snippet. Copy the entries you want and [reference them](#reference-tools). Re-run it to refresh entries when a server's tools change. If no tools are listed, confirm the server URL is reachable and, for OAuth servers, that you completed `connect`.
+
+## Reference tools
+
+A tool entry requires `name`, a tool exposed by a registered MCP server, and `mcp_server_url`, which points at that server. The `mcp_server_name` and `display_name` fields are optional.
+
+```json
+{
+  "tools": [
+    {
+      "name": "example_tool",
+      "mcp_server_url": "https://example.com/mcp",
+      "mcp_server_name": "my-tools",
+      "display_name": "example_tool"
+    }
+  ],
+  "interrupt_config": {
+    "https://example.com/mcp::example_tool": true
+  }
+}
+```
+
+Add these entries to the `tools.json` file in your project root, which `deepagents init` scaffolds with an empty `tools` array.
+
+Use `interrupt_config` to require human approval before a tool runs. Key each entry by `"{mcp_server_url}::{tool_name}"` and set it to `true`. You can also include the server name in the key: `"{mcp_server_url}::{mcp_server_name}::{tool_name}"`.
+
+To deploy an agent with no MCP tools, leave `tools.json` empty.
+
+### Validate tools at deploy time
+
+At deploy time, Managed Deep Agents validates the referenced MCP server URLs:
+
+- If a server URL is not registered, register it first with `deepagents mcp-servers add`.
+- If an OAuth server is registered but the caller cannot invoke it, complete OAuth first with `deepagents mcp-servers connect <id|name|url>`.
+
+The CLI runs this check locally before it sends the deploy request.
+
+## Manage server credentials
+
+Static headers are stored with the MCP server record and are redacted whenever you inspect it.
+
+| Task | CLI |
+| --- | --- |
+| List servers | `deepagents mcp-servers list` |
+| Inspect a server with headers redacted | `deepagents mcp-servers get <server>` |
+| Change headers | `deepagents mcp-servers update <server>` |
+| Remove a server and its stored headers | `deepagents mcp-servers delete <server>` |
+
+For OAuth servers, credentials are scoped per user, so each caller completes their own connection. For the full command list, see the [CLI reference](/langsmith/managed-deep-agents-cli#manage-mcp-servers).
+
+## Next steps
+
+After you connect tools, [deploy the agent](/langsmith/managed-deep-agents-deploy) with a `tools.json` file that references the registered MCP server URLs.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/managed-deep-agents-mcp.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

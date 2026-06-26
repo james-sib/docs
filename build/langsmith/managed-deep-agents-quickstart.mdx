@@ -1,0 +1,148 @@
+---
+title: Managed Deep Agents quickstart
+sidebarTitle: Quickstart
+description: Create and deploy your first Managed Deep Agent with the CLI.
+---
+
+LangChain hosts [Managed Deep Agents](/langsmith/managed-deep-agents-overview), so you can deploy a Deep Agent without setting up infrastructure. This quickstart shows how to scaffold a local project, edit the agent instructions, and deploy it with the CLI.
+
+For the full deploy workflow and all backend options, see [Deploy an agent](/langsmith/managed-deep-agents-deploy).
+
+<Note>
+Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
+</Note>
+
+## Prerequisites
+
+Before you start, make sure you have:
+
+- Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
+- A [LangSmith API key](/langsmith/create-account-api-key) for a workspace with private beta access.
+- The `deepagents-cli>=0.2.2` package.
+
+## Create and deploy an agent
+
+<Steps>
+  <Step title="Install the CLI" id="install-the-cli">
+
+Install `deepagents-cli` with `uv` (preferred) or `pip`:
+
+<CodeGroup>
+
+```bash uv
+uv tool install "deepagents-cli>=0.2.2"
+```
+
+```bash pip
+pip install -U "deepagents-cli>=0.2.2"
+```
+
+</CodeGroup>
+
+To upgrade an existing CLI installation, run `uv tool upgrade deepagents-cli` (or `pip install -U "deepagents-cli"` if you installed with pip).
+
+  </Step>
+
+  <Step title="Set your API key">
+
+Set a LangSmith API key for a workspace with private beta access:
+
+```bash
+export LANGSMITH_API_KEY="<LANGSMITH_API_KEY>"
+```
+
+<Note>
+If a request returns 401 or 403, confirm your API key belongs to a workspace with private beta access.
+</Note>
+
+  </Step>
+
+  <Step title="Create a project">
+
+Create a Managed Deep Agents project:
+
+```bash
+deepagents init research-assistant
+cd research-assistant
+```
+
+The CLI creates:
+
+| File or directory | Purpose |
+| --- | --- |
+| `agent.json` | Agent metadata, model, backend, and optional target `agent_id`. |
+| `AGENTS.md` | Main agent instructions. |
+| `tools.json` | Empty MCP tool configuration. |
+| `skills/example-skill/` | Example skill you can edit or remove. |
+| `subagents/researcher/` | Example subagent you can edit or remove. |
+| `.gitignore` | Excludes local environment files. |
+
+  </Step>
+
+  <Step title="Edit the instructions">
+
+Open `AGENTS.md` and replace the generated instructions with the behavior you want:
+
+```md AGENTS.md
+# Research assistant
+
+You are a careful research assistant. Search for sources, keep notes, and return
+concise answers with citations.
+```
+
+The generated project uses the `state` backend so the agent can deploy without sandbox-specific configuration. Switch to the `sandbox` backend when the agent needs a [LangSmith sandbox](/langsmith/sandboxes) for code execution, filesystem work, or long-running tasks. For options, see [Choose a backend](/langsmith/managed-deep-agents-deploy#choose-a-backend).
+
+If the agent calls MCP tools, [connect tools](/langsmith/managed-deep-agents-mcp) before deploying the agent.
+
+  </Step>
+
+  <Step title="Deploy the agent">
+
+Deploy the local project:
+
+```bash
+deepagents deploy
+```
+
+On success, the CLI prints the agent name, ID, short revision, agent URL, and a post-deploy MCP health check:
+
+```text
+Deployed: research-assistant
+  agent_id: e2de7a35-9dda-462b-b982-9e57051993bc
+  revision: 13ac11f1
+  https://smith.langchain.com/o/-/agents/e2de7a35-9dda-462b-b982-9e57051993bc
+  health:   {'agent_id': '...', 'mcp_check': {'ok': True, 'servers': []}, ...}
+```
+
+Open the printed agent URL in LangSmith to inspect the deployed agent, managed files, revisions, traces, and runtime behavior.
+
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Connect tools" icon="plug" href="/langsmith/managed-deep-agents-mcp">
+    Register MCP servers and reference their tools from `tools.json`.
+  </Card>
+  <Card title="Deploy an agent" icon="upload" href="/langsmith/managed-deep-agents-deploy">
+    Review the complete CLI deploy workflow and project file layout.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/langsmith/managed-deep-agents-cli">
+    Review all deploy commands, flags, and validation rules.
+  </Card>
+  <Card title="LangSmith sandboxes" icon="terminal-2" href="/langsmith/sandboxes">
+    Learn how sandboxes provide isolated execution environments.
+  </Card>
+</CardGroup>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/managed-deep-agents-quickstart.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
