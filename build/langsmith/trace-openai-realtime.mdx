@@ -1,0 +1,107 @@
+---
+title: Trace OpenAI Realtime applications
+sidebarTitle: OpenAI Realtime
+description: Trace OpenAI Realtime voice agents in LangSmith using the LangSmith SDK.
+---
+
+Trace your [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) voice agents to LangSmith with the LangSmith OpenAI integration. For high-level conventions, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+The OpenAI Realtime integration requires `langsmith[openai]`.
+</Note>
+
+OpenAI Realtime is a speech-to-speech model that streams typed events over a WebSocket. The integration captures each conversation as a single LangSmith trace, with a span for every meaningful event (transcripts, model responses, and tool calls) grouped by turn. You wrap the connection once and do not create any spans yourself. The flood of audio chunks is played but not traced.
+
+## Install
+
+<CodeGroup>
+
+```bash pip
+pip install "langsmith[openai]"
+```
+
+```bash uv
+uv add "langsmith[openai]"
+```
+
+</CodeGroup>
+
+Voice apps also need an audio library such as `sounddevice` for microphone and speaker I/O.
+
+## Set environment variables
+
+```bash .env
+LANGSMITH_API_KEY=<your-langsmith-api-key>
+LANGSMITH_TRACING=true
+LANGSMITH_PROJECT=openai-realtime-voice
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+## Set up tracing
+
+Import `wrap_realtime` and wrap your Realtime connection. It returns a transparent proxy, so your existing `async for event in connection` loop, `session.update`, and tool handling stay the same:
+
+```python
+from langsmith.integrations.openai import wrap_realtime
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI()
+
+async with client.realtime.connect(model="gpt-realtime") as raw, wrap_realtime(
+    raw,
+    thread_id=thread_id,
+    project_name="openai-realtime-voice",
+) as connection:
+    await connection.session.update(session={...})  # your existing config
+
+    async for event in connection:
+        ...  # your existing handling: play audio, run tools, update UI
+```
+
+A stable `thread_id` you generate per conversation (for example, a UUID) groups the trace into a LangSmith [thread](/langsmith/threads). Any [`@traceable`](/langsmith/annotate-code) tools you run while handling an event nest under that event automatically.
+
+<Note>
+Enable `input_audio_transcription` (and the agent transcript) in your `session.update`, or the transcription events that make the trace readable never arrive.
+</Note>
+
+## Record the conversation audio
+
+Feed the proxy your microphone and playback audio, and it attaches a single stereo recording (user left, agent right) to the trace. Pass `is_agent_speaking` so barge-ins are flagged:
+
+```python
+async with client.realtime.connect(model="gpt-realtime") as raw, wrap_realtime(
+    raw,
+    thread_id=thread_id,
+    is_agent_speaking=lambda: speaker.buffered_bytes() > 0,
+) as connection:
+    async for event in connection:
+        if event.type == "input_audio_buffer.append":
+            connection.record_user_audio(mic_chunk)      # user mic PCM16
+        elif event.type == "response.output_audio.delta":
+            connection.record_agent_audio(played_chunk)  # agent PCM16 as played
+```
+
+Record the agent audio as it is played to the client, so a barge-in shows up truncated. For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Voice fundamentals" icon="waveform" href="/langsmith/trace-voice-fundamentals">
+    Core conventions for tracing voice agents.
+  </Card>
+  <Card title="Upload files with traces" icon="paperclip" href="/langsmith/upload-files-with-traces">
+    Attach the conversation audio recording to your trace.
+  </Card>
+</CardGroup>
+</content>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/trace-openai-realtime.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
