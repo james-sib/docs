@@ -1,0 +1,199 @@
+---
+title: Trace OpenAI Realtime applications
+sidebarTitle: OpenAI Realtime
+description: Trace OpenAI Realtime voice agents in LangSmith using the LangSmith SDK.
+---
+
+The [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) powers low-latency speech-to-speech voice agents. This guide shows how to trace a Realtime app to LangSmith.
+
+OpenAI Realtime is a speech-to-speech model: it processes audio natively and exchanges a continuous stream of typed JSON events with your application over a persistent WebSocket connection, rather than making discrete request/response calls. The following sections show those events and how the integration turns them into a LangSmith trace. For high-level philosophy on getting the most out of your voice agent traces, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+The OpenAI Realtime integration requires `langsmith[openai]`.
+</Note>
+
+## The event model
+
+Every event has a discriminated `type` string that indicates what it represents: audio, a tool call, and so on.
+
+The client **sends** events to configure the session and stream audio. These are not traced as spans; they are requests, and their effects come back as server events:
+
+| Client event | What it does |
+| --- | --- |
+| `session.update` | Configure the session: instructions, voice, audio formats, transcription model, turn detection, tools. |
+| `input_audio_buffer.append` | Stream a base64 PCM16 mic chunk. Sent continuously. |
+| `conversation.item.create` | Add an item, used to return a `function_call_output` after running a tool. |
+| `response.create` | Ask the model to generate a response (needed explicitly when turn detection uses `create_response: false`). |
+
+The server **sends back** events:
+
+| Server event | What it carries | Traced? |
+| --- | --- | --- |
+| `session.created` / `session.updated` | Handshake / config acknowledgement. | Yes |
+| `input_audio_buffer.speech_started` | Server VAD heard the user start, the **barge-in signal**; flush the speaker buffer. | Yes |
+| `input_audio_buffer.speech_stopped` | Server VAD heard the user stop. | Yes |
+| `input_audio_buffer.committed` | The audio buffer became a conversation item. | No |
+| `conversation.item.created` | An item was added server-side. | No |
+| `conversation.item.input_audio_transcription.completed` | The full user transcript for the turn. | Yes |
+| `response.created` | The model started generating. | No |
+| `response.output_audio.delta` | One chunk of agent speech (base64 PCM16); hundreds per response. | No, played, never spanned |
+| `response.output_audio_transcript.delta` | Streaming fragment of the agent's transcript. | No |
+| `response.output_audio_transcript.done` | The agent's full transcript for the response. | Folded into the transcript |
+| `response.function_call_arguments.delta` / `.done` | Streaming / final tool-call arguments. | No, carried on the model run |
+| `response.output_item.*`, `response.content_part.*` | Structural progress of the response. | No |
+| `response.done` | The complete response object: all output items (including every `function_call`), plus token usage. | Yes |
+| `error` | Server-reported error. | Yes |
+
+## How events map to LangSmith runs
+
+`wrap_realtime` traces the whole conversation as a single trace, grouped into turns, with one span per meaningful event:
+
+```text
+realtime_session                                 # root run (chain)
+│   metadata: thread_id, model, event_count, duration_s, ls_modality=audio
+│   attachments: conversation.wav (stereo: L=user, R=agent)
+│
+├─ session.created / session.updated
+├─ turn                                           # metadata: latency, was_interrupted
+│   ├─ conversation.item.input_audio_transcription.completed   # user message
+│   └─ response.done                              # chain wrapper
+│       ├─ model                                  # llm run: assistant message + token usage
+│       └─ lookup_weather × N                     # your @traceable tools, nested
+└─ turn                                           # the next user utterance
+```
+
+<Note>
+**The noise rule:** the integration skips every streaming `.delta` event, because the matching `.done` event repeats the complete payload. `response.output_audio.delta` in particular is the agent's voice: hundreds of chunks per response that would bury the trace. Play it to the speaker, but it is never made a span.
+</Note>
+
+## Installation
+
+<CodeGroup>
+
+```bash pip
+pip install "langsmith[openai]"
+```
+
+```bash uv
+uv add "langsmith[openai]"
+```
+
+</CodeGroup>
+
+The `langsmith[openai]` extra installs the integration and the `openai` package. Voice apps also need an audio library such as `sounddevice` for microphone and speaker I/O.
+
+## Set up your environment
+
+The following steps demonstrate how to trace using the LangSmith SDK. You can also trace using OpenTelemetry directly. See [Trace with OpenTelemetry](/langsmith/trace-with-opentelemetry).
+
+```bash
+export LANGSMITH_API_KEY=...
+export LANGSMITH_TRACING=true
+export LANGSMITH_PROJECT=my-voice-app
+export OPENAI_API_KEY=...
+```
+
+## Quickstart
+
+<Note>
+This guide focuses on the tracing layer. It assumes you already have a working Realtime app: the WebSocket `connection`, the `session.update` configuration, and your microphone and speaker I/O. Enable `input_audio_transcription` (and the agent transcript) in your `session.update`, or the transcription events that make the trace readable never arrive.
+</Note>
+
+### Step 1: Wrap the connection
+
+`wrap_realtime` returns a transparent proxy of your Realtime connection. Iterate and call it exactly as you would the original, and it builds the trace from the event stream. Your `async for event in connection` loop is left untouched:
+
+```python
+import uuid
+
+from langsmith.integrations.openai import wrap_realtime
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI()
+thread_id = str(uuid.uuid4())
+
+async with client.realtime.connect(model="gpt-realtime") as raw, wrap_realtime(
+    raw,
+    thread_id=thread_id,
+    project_name="my-voice-app",
+) as connection:
+    await connection.session.update(session={...})  # your existing config
+
+    async for event in connection:
+        ...  # your existing handling: play audio, run tools, set UI state
+```
+
+A stable `thread_id` you generate per conversation (for example, a UUID) groups the trace into a LangSmith [thread](/langsmith/threads). The root run is marked with `ls_modality="audio"` automatically.
+
+### Step 2: Run tools as usual
+
+When the model requests a tool, run it in your event loop as you normally would. `wrap_realtime` keeps each event's span active while you handle it, so any [`@traceable`](/langsmith/annotate-code) work nests under the event that triggered it:
+
+```python
+import json
+
+from langsmith import traceable
+
+@traceable(run_type="tool")
+async def lookup_weather(city: str) -> dict:
+    ...
+
+if event.type == "response.done":
+    calls = [i for i in (event.response.output or []) if i.type == "function_call"]
+    for call in calls:
+        result = await lookup_weather(**json.loads(call.arguments))  # nests under response.done
+        await connection.conversation.item.create(item={
+            "type": "function_call_output",
+            "call_id": call.call_id,
+            "output": json.dumps(result),
+        })
+    if calls:
+        await connection.response.create()   # ask for the spoken follow-up
+```
+
+The `response.done` event is recorded as a `chain` wrapper holding a point-in-time `model` (`llm`) run with the assistant message and token usage, so local tool latency is never attributed to the model call.
+
+## Attach the conversation audio
+
+To listen to a conversation alongside its transcript, feed the audio to the wrapper and it attaches a single stereo recording (user left, agent right) to the root run when the conversation ends. Record what was played to the client so the recording reflects what was actually heard, including speech cut off by a barge-in.
+
+Feed the user microphone PCM and the agent playback PCM through the proxy, and pass `is_agent_speaking` so barge-ins are flagged on the turn:
+
+```python
+async with client.realtime.connect(model="gpt-realtime") as raw, wrap_realtime(
+    raw,
+    thread_id=thread_id,
+    project_name="my-voice-app",
+    is_agent_speaking=lambda: speaker.buffered_bytes() > 0,
+) as connection:
+    async for event in connection:
+        if event.type == "input_audio_buffer.append":
+            connection.record_user_audio(mic_chunk)      # user mic PCM16
+        elif event.type == "response.output_audio.delta":
+            connection.record_agent_audio(played_chunk)  # agent PCM16 as played
+```
+
+For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces). For the cross-provider rationale, see [Record a single combined audio file](/langsmith/trace-voice-fundamentals#record-a-single-combined-audio-file).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Voice fundamentals" icon="waveform" href="/langsmith/trace-voice-fundamentals">
+    Core conventions for tracing voice agents.
+  </Card>
+  <Card title="Upload files with traces" icon="paperclip" href="/langsmith/upload-files-with-traces">
+    Attach the conversation audio recording to your trace.
+  </Card>
+</CardGroup>
+</content>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/trace-openai-realtime.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

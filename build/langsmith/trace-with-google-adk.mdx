@@ -1,0 +1,151 @@
+---
+title: Trace Google ADK applications
+sidebarTitle: Google ADK
+---
+
+import InstallGoogleAdk from '/snippets/langsmith/integrations/google-adk/install.mdx';
+import SetupGoogleAdk from '/snippets/langsmith/integrations/google-adk/setup.mdx';
+import ExampleQuickstart from '/snippets/langsmith/integrations/google-adk/example-quickstart.mdx';
+import ExampleMultiAgent from '/snippets/langsmith/integrations/google-adk/example-multi-agent.mdx';
+
+This guide shows you how to trace [Google Agent Development Kit (ADK)](https://github.com/google/adk-python) agents in LangSmith. You'll configure automatic tracing for your ADK applications to capture agent invocations, tool calls, and LLM interactions.
+
+## Installation
+
+Install the required packages using your preferred package manager:
+
+<InstallGoogleAdk/>
+
+## Setup
+
+Set your [API keys](/langsmith/create-account-api-key):
+
+<SetupGoogleAdk/>
+
+To create a Google API key, refer to [Google AI Studio](https://aistudio.google.com/api-keys).
+
+## Configure tracing
+
+To trace ADK agents, use `configure_google_adk()` from the LangSmith SDK. Call this function once at the start of your application before creating any ADK agents:
+
+```python
+from langsmith.integrations.google_adk import configure_google_adk
+
+configure_google_adk(
+    project_name="my-adk-project",  # Optional: defaults to LANGSMITH_PROJECT env var
+)
+```
+
+The function accepts the following optional parameters:
+
+- `project_name`: LangSmith project to send traces to. Defaults to the `LANGSMITH_PROJECT` environment variable.
+- `name`: Name for the root trace. Defaults to `"google_adk.session"`.
+- `metadata`: Dictionary of key-value pairs for additional context.
+- `tags`: List of strings to categorize traces.
+
+## Example
+
+This example creates a weather agent with a tool, then runs it with tracing enabled:
+
+<ExampleQuickstart/>
+
+## View traces in LangSmith
+
+After running your application, you can view traces in the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-trace-with-google-adk) that include:
+
+- **Agent invocations**: Complete flows through your ADK agents
+- **Tool calls**: Individual function calls made by agents
+- **LLM interactions**: Requests and responses from Gemini models
+- **Multi-agent workflows**: Traces from sequential and parallel agent compositions
+
+## Custom metadata and tags
+
+Add metadata and tags when configuring tracing to categorize and filter traces:
+
+```python
+from langsmith.integrations.google_adk import configure_google_adk
+
+configure_google_adk(
+    project_name="production-agents",
+    metadata={
+        "environment": "production",
+        "team": "ml-platform",
+    },
+    tags=["adk", "weather", "v2"],
+)
+```
+
+## Multi-agent workflows
+
+The integration automatically traces multi-agent workflows including sequential and parallel agent compositions:
+
+<ExampleMultiAgent/>
+
+## Trace ADK Live voice agents
+
+`configure_google_adk()` traces ADK's standard execution paths, but ADK's `Runner.run_live` (the bidirectional streaming voice loop) is not covered by that instrumentation. To trace a Live voice conversation, register `LangSmithLivePlugin` on your `Runner`. The plugin builds the trace from the live event stream: one root run per conversation, with a span per event (transcripts, tool calls, turn boundaries, and interruptions).
+
+For high-level guiding principles on tracing voice agents, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+`LangSmithLivePlugin` requires `langsmith[google-adk]` and a version of `google-adk` with Live support.
+</Note>
+
+Pass the plugin to `Runner(plugins=[...])`. It runs alongside your own `run_live` loop and carries no application logic:
+
+```python
+from google.adk.runners import Runner
+from langsmith.integrations.google_adk import LangSmithLivePlugin
+
+# The project defaults to the LANGSMITH_PROJECT environment variable.
+plugin = LangSmithLivePlugin(project_name="my-adk-voice")
+
+runner = Runner(
+    app_name="voice-app",
+    agent=root_agent,
+    session_service=session_service,
+    plugins=[plugin],
+)
+
+async for event in runner.run_live(
+    user_id=user_id,
+    session_id=session.id,
+    live_request_queue=queue,
+    run_config=run_config,
+):
+    ...  # your audio playback and UI
+```
+
+The plugin produces a trace like this:
+
+```text
+realtime_session                       # root: transcript + audio recording
+├── input_transcription                # user speech
+├── function_call: get_weather
+├── function_response: get_weather
+├── output_transcription               # agent speech
+├── turn_complete
+└── interrupted                        # barge-in
+```
+
+### Attach the conversation audio
+
+To attach a stereo recording of the conversation, feed the plugin the user and agent PCM as you play it. Recording at the playout boundary keeps the recording faithful to what was heard, including speech cut off by a barge-in:
+
+```python
+plugin.record_user_audio(mic_chunk)      # user mic PCM16
+plugin.record_agent_audio(played_chunk)  # agent PCM16 as played
+```
+
+The plugin encodes the merged audio to a WAV and attaches it to the root run when the conversation ends. For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/trace-with-google-adk.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
