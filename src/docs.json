@@ -1605,10 +1605,7 @@
                       "langsmith/managed-deep-agents-quickstart",
                       "langsmith/managed-deep-agents-mcp",
                       "langsmith/managed-deep-agents-deploy",
-                      "langsmith/managed-deep-agents-invoke",
-                      "langsmith/managed-deep-agents-sdk",
-                      "langsmith/managed-deep-agents-cli",
-                      "langsmith/managed-deep-agents-api"
+                      "langsmith/managed-deep-agents-cli"
                     ]
                   },
                   {
@@ -1685,17 +1682,6 @@
                         ],
                         "openapi": {
                           "source": "https://api.host.langchain.com/openapi.json"
-                        }
-                      },
-                      {
-                        "group": "Managed Deep Agents API",
-                        "tag": "BETA",
-                        "pages": [
-                          "langsmith/managed-deep-agents-api-overview"
-                        ],
-                        "openapi": {
-                          "source": "langsmith/managed-deep-agents-openapi.json",
-                          "directory": "langsmith/managed-deep-agents-api"
                         }
                       },
                       "langsmith/agent-server-changelog"
@@ -2267,6 +2253,22 @@
     {
       "source": "/langsmith/env-var",
       "destination": "/langsmith/env-var-cloud"
+    },
+    {
+      "source": "/langsmith/managed-deep-agents-invoke",
+      "destination": "/langsmith/managed-deep-agents-overview"
+    },
+    {
+      "source": "/langsmith/managed-deep-agents-sdk",
+      "destination": "/langsmith/managed-deep-agents-overview"
+    },
+    {
+      "source": "/langsmith/managed-deep-agents-api",
+      "destination": "/langsmith/managed-deep-agents-overview"
+    },
+    {
+      "source": "/langsmith/managed-deep-agents-api-overview",
+      "destination": "/langsmith/managed-deep-agents-overview"
     },
     {
       "source": "/langsmith/polly",
