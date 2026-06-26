@@ -825,13 +825,6 @@ cURL examples coming soon.
 
 #### Parameter renames
 
-Each field uses the idiomatic case for its language:
-
-- **Python:** `snake_case` (e.g., `project_ids`, `min_start_time`)
-- **TypeScript:** `camelCase` (e.g., `projectIds`, `minStartTime`)
-- **cURL:** `snake_case` — JSON body fields match Python names exactly
-- **Java** and **Go:** naming will be confirmed when support is available
-
 <Warning>
 `project_name` is not supported in `runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name: `client.read_project(project_name="my-project").id`
 </Warning>
@@ -840,28 +833,95 @@ Each field uses the idiomatic case for its language:
 `min_start_time` defaults to **1 day ago** when omitted. `list_runs` with no `start_time` returned all historical runs; `runs.query` without `min_start_time` silently scopes the query to the last 24 hours. Pass an explicit `min_start_time` if you need a wider window.
 </Warning>
 
-| Before (`list_runs`) | After (`runs.query`) | Notes |
-|---|---|---|
-| `project_name` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
-| `project_id` | `project_ids` | Now takes a list; mutually exclusive with `reference_dataset_id` |
-| `run_type` | `run_type` | Values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, `"RETRIEVER"`, `"EMBEDDING"`, `"PROMPT"`, `"PARSER"` |
-| `trace_id` | `trace_id` | Unchanged |
-| `reference_example_id` | `reference_examples` | Now takes a list of UUIDs |
-| `query` | *(removed)* | No equivalent |
-| `filter` | `filter` | Syntax unchanged |
-| `trace_filter` | `trace_filter` | Unchanged |
-| `tree_filter` | `tree_filter` | Unchanged |
-| `is_root` | `is_root` | Unchanged |
-| `parent_run_id` | *(removed)* | No equivalent |
-| `start_time` | `min_start_time` | Now an explicit lower bound; defaults to 1 day ago—see warning above |
-| `error` | `has_error` | Renamed |
-| `run_ids` | `ids` | Renamed |
-| `select` | `selects` | Field names are now uppercase (`"NAME"`, `"STATUS"`, etc.) |
-| `limit` | *(removed)* | Use `page_size` for per-request batch size; see [Pagination changes](#common-patterns) |
-| *(not available)* | `max_start_time` | Upper bound for `start_time`; defaults to now |
-| *(not available)* | `page_size` | Per-request result count (default 100, max 1000) |
-| *(not available)* | `reference_dataset_id` | Alternative to `project_ids`; mutually exclusive |
-| *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
+<Tabs>
+  <Tab title="Python">
+    All parameters use `snake_case`.
+
+    | Before (`list_runs`) | After (`runs.query`) | Notes |
+    |---|---|---|
+    | `project_name` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
+    | `project_id` | `project_ids` | Now takes a list; mutually exclusive with `reference_dataset_id` |
+    | `run_type` | `run_type` | Values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, `"RETRIEVER"`, `"EMBEDDING"`, `"PROMPT"`, `"PARSER"` |
+    | `trace_id` | `trace_id` | Unchanged |
+    | `reference_example_id` | `reference_examples` | Now takes a list of UUIDs |
+    | `query` | *(removed)* | No equivalent |
+    | `filter` | `filter` | Syntax unchanged |
+    | `trace_filter` | `trace_filter` | Unchanged |
+    | `tree_filter` | `tree_filter` | Unchanged |
+    | `is_root` | `is_root` | Unchanged |
+    | `parent_run_id` | *(removed)* | No equivalent |
+    | `start_time` | `min_start_time` | Renamed; defaults to 1 day ago—see warning above |
+    | `error` | `has_error` | Renamed |
+    | `run_ids` | `ids` | Renamed |
+    | `select` | `selects` | Field names are now uppercase (`"NAME"`, `"STATUS"`, etc.) |
+    | `limit` | *(removed)* | Use `page_size` for per-request batch size |
+    | *(not available)* | `max_start_time` | Upper bound for `start_time`; defaults to now |
+    | *(not available)* | `page_size` | Per-request result count (default 100, max 1000) |
+    | *(not available)* | `reference_dataset_id` | Alternative to `project_ids`; mutually exclusive |
+    | *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
+  </Tab>
+  <Tab title="TypeScript">
+    The v2 API uses `snake_case` parameter names, unlike v1 which used `camelCase`.
+
+    | Before (`listRuns`) | After (`client.runs.queryV2`) | Notes |
+    |---|---|---|
+    | `projectName` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
+    | `projectId` | `project_ids` | Renamed to `snake_case`; now takes a list; mutually exclusive with `reference_dataset_id` |
+    | `runType` | `run_type` | Renamed to `snake_case`; values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, ... |
+    | `traceId` | `trace_id` | Renamed to `snake_case` |
+    | `referenceExampleId` | `reference_examples` | Renamed to `snake_case`; now takes a list of UUIDs |
+    | `query` | *(removed)* | No equivalent |
+    | `filter` | `filter` | Syntax unchanged |
+    | `traceFilter` | `trace_filter` | Renamed to `snake_case` |
+    | `treeFilter` | `tree_filter` | Renamed to `snake_case` |
+    | `isRoot` | `is_root` | Renamed to `snake_case` |
+    | `parentRunId` | *(removed)* | No equivalent |
+    | `startTime` | `min_start_time` | Renamed to `snake_case`; defaults to 1 day ago—see warning above |
+    | `error` | `has_error` | Renamed |
+    | `id` | `ids` | Renamed to `snake_case` |
+    | `select` | `selects` | Field names are now uppercase (`"NAME"`, `"STATUS"`, etc.) |
+    | `limit` | *(removed)* | Use `page_size` for per-request batch size |
+    | `order` | *(removed)* | No equivalent |
+    | `executionOrder` | *(removed)* | No equivalent |
+    | *(not available)* | `max_start_time` | Upper bound for `start_time`; defaults to now |
+    | *(not available)* | `page_size` | Per-request result count (default 100, max 1000) |
+    | *(not available)* | `reference_dataset_id` | Alternative to `project_ids`; mutually exclusive |
+    | *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
+  </Tab>
+  <Tab title="Java">
+    All parameters use `camelCase` builder methods (e.g., `projectIds()`, `minStartTime()`).
+
+    | Before (`RunQueryParams`) | After (`RunQueryV2Params`) | Notes |
+    |---|---|---|
+    | `session()` | `projectIds()` | Renamed; now takes explicit project UUIDs |
+    | `runType()` | `runType()` | Values must now be uppercase |
+    | `trace()` | `traceId()` | Renamed |
+    | `referenceExample()` | `referenceExamples()` | Renamed to plural |
+    | `query()` | *(removed)* | No equivalent |
+    | `filter()` | `filter()` | Syntax unchanged |
+    | `traceFilter()` | `traceFilter()` | Unchanged |
+    | `treeFilter()` | `treeFilter()` | Unchanged |
+    | `isRoot()` | `isRoot()` | Unchanged |
+    | `parentRun()` | *(removed)* | No equivalent |
+    | `startTime()` | `minStartTime()` | Renamed; defaults to 1 day ago—see warning above |
+    | `error()` | `hasError()` | Renamed |
+    | `id()` | `ids()` | Renamed |
+    | `select()` | `selects()` | Field names are now uppercase |
+    | `limit()` | *(removed)* | Use `pageSize()` |
+    | `order()` | *(removed)* | No equivalent |
+    | `executionOrder()` | *(removed)* | No equivalent |
+    | `cursor()` | `cursor()` | Unchanged |
+    | *(not available)* | `maxStartTime()` | Upper bound for start time; defaults to now |
+    | *(not available)* | `pageSize()` | Per-request result count (default 100, max 1000) |
+    | *(not available)* | `referenceDatasetId()` | Alternative to `projectIds()` |
+  </Tab>
+  <Tab title="Go">
+    Go SmithDB v2 support is planned. Check back for updates.
+  </Tab>
+  <Tab title="cURL">
+    JSON body field names match the Python `snake_case` names exactly.
+  </Tab>
+</Tabs>
 
 #### Reponse fields rename
 
@@ -1023,19 +1083,54 @@ cURL examples coming soon.
 
 #### Parameter renames
 
-Each field uses the same naming conventions as above.
-
 <Warning>
 `runs.retrieve` requires two new fields—`project_id` and `start_time`—that `read_run` did not need. Both are required to locate the run in SmithDB.
 </Warning>
 
-| Before (`read_run`) | After (`runs.retrieve`) | Notes |
-|---|---|---|
-| `run_id` | `run_id` | Unchanged |
-| `load_child_runs` | *(removed)* | No equivalent |
-| *(not available)* | `project_id` | **Required**—UUID of the project that owns the run |
-| *(not available)* | `start_time` | **Required**—run's start time (RFC3339), used with `project_id` to locate the run |
-| *(all fields returned by default)* | `selects` | Field projection; defaults to `["ID"]` only; field names are uppercase |
+<Tabs>
+  <Tab title="Python">
+    All parameters use `snake_case`.
+
+    | Before (`read_run`) | After (`runs.retrieve`) | Notes |
+    |---|---|---|
+    | `run_id` | `run_id` | Unchanged |
+    | `load_child_runs` | *(removed)* | No equivalent |
+    | *(not available)* | `project_id` | **Required**—UUID of the project that owns the run |
+    | *(not available)* | `start_time` | **Required**—run's start time (RFC3339), used with `project_id` to locate the run |
+    | *(all fields returned by default)* | `selects` | Field projection; defaults to `["ID"]` only; field names are uppercase |
+  </Tab>
+  <Tab title="TypeScript">
+    The v2 API uses `snake_case` parameter names, unlike v1 which used `camelCase`.
+
+    | Before (`readRun`) | After (`client.runs.retrieveV2`) | Notes |
+    |---|---|---|
+    | `runId` | `runId` | Unchanged (positional parameter) |
+    | `options.loadChildRuns` | *(removed)* | No equivalent |
+    | *(not available)* | `project_id` | **Required**—`snake_case`; UUID of the project that owns the run |
+    | *(not available)* | `start_time` | **Required**—`snake_case`; run's start time (RFC3339), used to locate the run |
+    | *(all fields returned by default)* | `selects` | Field projection; defaults to `["ID"]` only; field names are uppercase |
+  </Tab>
+  <Tab title="Java">
+    All parameters use `camelCase` builder methods.
+
+    | Before (`RunRetrieveParams`) | After (`RunRetrieveV2Params`) | Notes |
+    |---|---|---|
+    | `runId()` | `runId()` | Unchanged |
+    | `sessionId()` | *(removed)* | Replaced by `projectId()` |
+    | `startTime()` | `startTime()` | Now **required**; used with `projectId()` to locate the run in SmithDB |
+    | `excludeS3StoredAttributes()` | *(removed)* | No equivalent |
+    | `excludeSerialized()` | *(removed)* | No equivalent |
+    | `includeMessages()` | *(removed)* | No equivalent |
+    | *(not available)* | `projectId()` | **Required**—UUID of the project that owns the run |
+    | *(all fields returned by default)* | `selects()` | Field projection; defaults to `["ID"]` only; field names are uppercase |
+  </Tab>
+  <Tab title="Go">
+    Go SmithDB v2 support is planned. Check back for updates.
+  </Tab>
+  <Tab title="cURL">
+    Query parameter names match the Python `snake_case` names exactly.
+  </Tab>
+</Tabs>
 
 #### Reponse fields rename
 
