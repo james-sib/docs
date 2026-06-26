@@ -61,9 +61,9 @@ Click a tab below to see language-specific examples throughout this page.
 
 ### Query runs
 
-Query runs from a project with optional filtering and field projection. Returns a paginated result set—see [Pagination changes](#common-patterns) for important behavior differences from the existing query methods.
+Query runs from a project with optional filtering and field projection. Returns a paginated result set. Pagination behavior differs from `list_runs`—see the Pagination example below.
 
-#### Code migration
+#### Examples
 
 <Tabs>
   <Tab title="Python">
@@ -178,8 +178,6 @@ Query runs from a project with optional filtering and field projection. Returns 
     </CodeGroup>
   </Tab>
 </Tabs>
-
-#### Common patterns
 
 **List all runs in a project**
 
@@ -931,7 +929,7 @@ TODO ‼️
 
 Fetch a single run by ID. Returns only the run ID by default—specify a field selection list to retrieve additional data.
 
-#### Code migration
+#### Examples
 
 <Tabs>
   <Tab title="Python">
@@ -1016,8 +1014,6 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     </CodeGroup>
   </Tab>
 </Tabs>
-
-#### Common patterns
 
 **Fetch a single run by ID**
 
