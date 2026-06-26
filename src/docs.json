@@ -1689,6 +1689,13 @@
                         }
                       },
                       {
+                        "group": "Headless Fleet API",
+                        "openapi": {
+                          "source": "langsmith/headless-fleet-openapi.json",
+                          "directory": "langsmith/headless-fleet-api"
+                        }
+                      },
+                      {
                         "group": "Managed Deep Agents API",
                         "tag": "BETA",
                         "pages": [
