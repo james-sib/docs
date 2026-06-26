@@ -18,7 +18,21 @@ Before setting up tracing, ensure you have:
 
 ## Install and enable the plugin
 
-In a local clone of [`langsmith-cursor-plugins`](https://github.com/langchain-ai/langsmith-cursor-plugins), install the hooks for all Cursor projects (writes `~/.cursor/hooks.json`):
+Install the plugin directly from the GitHub repository in Cursor's settings:
+
+1. Open **Cursor → Settings → Plugins**.
+2. Paste `https://github.com/langchain-ai/langsmith-cursor-plugins` into the plugin link field.
+3. Confirm to add **LangSmith Tracing for Cursor**.
+
+This is the recommended path: it installs the hooks with no clone or build step, since the repository ships a precompiled bundle.
+
+<Warning>
+Fully restart Cursor after installing so it reloads `hooks.json`.
+</Warning>
+
+### Alternative: install from a local clone
+
+Install the hooks from a local clone of [`langsmith-cursor-plugins`](https://github.com/langchain-ai/langsmith-cursor-plugins). This writes `~/.cursor/hooks.json` for all Cursor projects:
 
 ```bash
 node scripts/install.mjs
@@ -36,15 +50,9 @@ To preview the hook configuration without writing it, run:
 node scripts/install.mjs --print
 ```
 
-The installer merges its entries with any existing `hooks.json`.
+The installer merges its entries with any existing `hooks.json`. The committed `bundle/` means these commands run without `pnpm install` or `pnpm build` — those are only needed when contributing changes to the TypeScript source.
 
-<Note>
-The repository includes a precompiled JavaScript bundle in `bundle/`, so the hooks run without `pnpm install` or `pnpm build`. Rebuild only after modifying the TypeScript source.
-</Note>
-
-<Warning>
-Fully restart Cursor after installing the hooks so it reloads `hooks.json`.
-</Warning>
+Restart Cursor after installing so it reloads `hooks.json`.
 
 ## Configure tracing
 
