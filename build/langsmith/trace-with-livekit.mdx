@@ -1,0 +1,114 @@
+---
+title: Trace LiveKit applications
+sidebarTitle: LiveKit
+---
+
+Trace your [LiveKit Agents](https://docs.livekit.io/agents/) voice agents to LangSmith with the LangSmith LiveKit integration. For high-level conventions, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+The LiveKit integration requires `langsmith[livekit]`.
+</Note>
+
+The integration captures each conversation as a single LangSmith trace, with a span for every pipeline stage (STT, LLM, TTS) grouped by turn, plus LiveKit's per-stage latency and token metrics. You enable it with one call and do not create any spans yourself.
+
+## Install
+
+Install the integration along with the LiveKit plugins your agent uses:
+
+<CodeGroup>
+
+```bash pip
+pip install "langsmith[livekit]" "livekit-agents[openai,silero,turn-detector]"
+```
+
+```bash uv
+uv add "langsmith[livekit]" "livekit-agents[openai,silero,turn-detector]"
+```
+
+</CodeGroup>
+
+## Set environment variables
+
+The integration reads your LangSmith credentials from the environment and exports to LangSmith for you:
+
+```bash .env
+LANGSMITH_API_KEY=<your-langsmith-api-key>
+LANGSMITH_TRACING=true
+LANGSMITH_PROJECT=livekit-voice
+LIVEKIT_URL=<your-livekit-url>
+LIVEKIT_API_KEY=<your-livekit-api-key>
+LIVEKIT_API_SECRET=<your-livekit-api-secret>
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+## Set up tracing
+
+Import `configure_livekit` and call it once before creating your `AgentServer`. It builds the tracer provider, registers the LangSmith span processor, and wires it into LiveKit:
+
+```python
+from langsmith.integrations.livekit import configure_livekit
+from livekit import agents
+from livekit.agents import Agent, AgentServer, AgentSession
+
+# Enable tracing before creating agents.
+configure_livekit()
+
+server = AgentServer()
+
+@server.rtc_session()
+async def my_agent(ctx: agents.JobContext):
+    session = AgentSession(
+        stt="deepgram/nova-2:en",
+        llm="openai/gpt-5.4-mini",
+        tts="openai/tts-1:alloy",
+    )
+    await session.start(room=ctx.room, agent=Agent(instructions="You are a helpful assistant."))
+```
+
+This works for both the STT/LLM/TTS cascade and speech-to-speech models: build the `AgentSession` with a realtime model (for example, `lk_openai.realtime.RealtimeModel(...)`) and the tracing setup is unchanged.
+
+## Record the conversation audio
+
+LiveKit records the call audio; the integration attaches it to the trace. Pass an `audio_path_provider` that returns the recording path, and enable recording on the session:
+
+```python
+from pathlib import Path
+
+_audio_path: Path | None = None
+configure_livekit(audio_path_provider=lambda: _audio_path)
+
+@server.rtc_session()
+async def my_agent(ctx: agents.JobContext):
+    global _audio_path
+    _audio_path = ctx.session_directory / "audio.ogg"
+    await session.start(
+        room=ctx.room,
+        agent=Agent(instructions="You are a helpful assistant."),
+        record={"audio": True},
+    )
+```
+
+The recording reflects what was played to the client, so a barge-in shows up truncated. In console mode, also pass `--record` on the command line. For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Voice fundamentals" icon="waveform" href="/langsmith/trace-voice-fundamentals">
+    Core conventions for tracing voice agents.
+  </Card>
+  <Card title="Upload files with traces" icon="paperclip" href="/langsmith/upload-files-with-traces">
+    Attach the conversation audio recording to your trace.
+  </Card>
+</CardGroup>
+</content>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/trace-with-livekit.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

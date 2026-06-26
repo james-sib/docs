@@ -1,0 +1,117 @@
+---
+title: Trace Pipecat applications
+sidebarTitle: Pipecat
+---
+
+Trace your [Pipecat](https://pipecat.ai/) voice agents to LangSmith with the LangSmith Pipecat integration. For high-level conventions, see [Voice tracing fundamentals](/langsmith/trace-voice-fundamentals).
+
+<Note>
+The Pipecat integration requires `langsmith[pipecat]`.
+</Note>
+
+The integration captures each conversation as a single LangSmith trace, with a span for every pipeline stage (STT, LLM, TTS) grouped by turn. You enable it with one call and do not create any spans yourself.
+
+## Install
+
+Install the integration along with the Pipecat service extras your pipeline uses:
+
+<CodeGroup>
+
+```bash pip
+pip install "langsmith[pipecat]" "pipecat-ai[whisper,openai,local]"
+```
+
+```bash uv
+uv add "langsmith[pipecat]" "pipecat-ai[whisper,openai,local]"
+```
+
+</CodeGroup>
+
+## Set environment variables
+
+The integration reads your LangSmith credentials from the environment and exports to LangSmith for you:
+
+```bash .env
+LANGSMITH_API_KEY=<your-langsmith-api-key>
+LANGSMITH_TRACING=true
+LANGSMITH_PROJECT=pipecat-voice
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+## Set up tracing
+
+Import `configure_pipecat` and call it once before building your pipeline. Enable tracing on the `PipelineTask`:
+
+```python
+from langsmith.integrations.pipecat import configure_pipecat
+from pipecat.pipeline.task import PipelineParams, PipelineTask
+
+# Install the tracer and the LangSmith span processor.
+configure_pipecat()
+
+task = PipelineTask(
+    pipeline,
+    params=PipelineParams(enable_metrics=True),
+    enable_tracing=True,
+    enable_turn_tracking=True,
+    conversation_id=conversation_id,
+)
+```
+
+<Note>
+Set `enable_tracing=True`, `enable_turn_tracking=True`, and `enable_metrics=True`. Turn tracking is required for tracing, and metrics drive the latency and token data on each span.
+</Note>
+
+If your LLM stage is an in-process [LangGraph or LangChain](/oss/python/langgraph/overview) agent, pass `configure_pipecat(llm_span_kind="chain")` so its model and tool runs nest correctly inside Pipecat's `llm` span.
+
+## Record the conversation audio
+
+Attach the conversation audio to the trace using Pipecat's [`AudioBufferProcessor`](https://docs.pipecat.ai/server/utilities/audio/audio-recording). Place it after `transport.output()` so it captures what was actually played (after any barge-in truncation), hand it to the integration, and start it once the session is running:
+
+```python
+from pipecat.processors.audio.audio_buffer_processor import AudioBufferProcessor
+
+span_processor = configure_pipecat()
+
+# Stereo: user on the left channel, agent on the right.
+audiobuffer = AudioBufferProcessor(num_channels=2, buffer_size=32_000)
+span_processor.attach_audio_buffer(audiobuffer, conversation_id=conversation_id)
+
+pipeline = Pipeline([
+    transport.input(),
+    stt,
+    context_aggregator.user(),
+    llm,
+    tts,
+    transport.output(),
+    audiobuffer,                     # after output(): records what was heard
+    context_aggregator.assistant(),
+])
+
+await audiobuffer.start_recording()
+```
+
+The integration attaches the recording to the conversation root when it ends. For the underlying attachment API, see [Upload files with traces](/langsmith/upload-files-with-traces).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Voice fundamentals" icon="waveform" href="/langsmith/trace-voice-fundamentals">
+    Core conventions for tracing voice agents.
+  </Card>
+  <Card title="Upload files with traces" icon="paperclip" href="/langsmith/upload-files-with-traces">
+    Attach the conversation audio recording to your trace.
+  </Card>
+</CardGroup>
+</content>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/trace-with-pipecat.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
