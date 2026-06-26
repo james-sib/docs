@@ -14,7 +14,7 @@
     import { OpenAIEmbeddings } from "@langchain/openai";
     
     const vectorStore = new MemoryVectorStore(
-      new OpenAIEmbeddings({ model: "openai:gpt-5.4" }),
+      new OpenAIEmbeddings({ model: "openai:gpt-5.5" }),
     );
     await vectorStore.addDocuments(allSplits);
     ```
@@ -34,7 +34,7 @@
     import { OpenAIEmbeddings } from "@langchain/openai";
     
     const vectorStore = new MemoryVectorStore(
-      new OpenAIEmbeddings({ model: "openrouter:anthropic/claude-sonnet-4-6" }),
+      new OpenAIEmbeddings({ model: "openrouter:openrouter:z-ai/glm-5.2" }),
     );
     await vectorStore.addDocuments(allSplits);
     ```
@@ -44,7 +44,7 @@
     import { OpenAIEmbeddings } from "@langchain/openai";
     
     const vectorStore = new MemoryVectorStore(
-      new OpenAIEmbeddings({ model: "fireworks:accounts/fireworks/models/qwen3p5-397b-a17b" }),
+      new OpenAIEmbeddings({ model: "fireworks:accounts/fireworks/models/kimi-k2p7-code" }),
     );
     await vectorStore.addDocuments(allSplits);
     ```
@@ -64,7 +64,7 @@
     import { OpenAIEmbeddings } from "@langchain/openai";
     
     const vectorStore = new MemoryVectorStore(
-      new OpenAIEmbeddings({ model: "ollama:devstral-2" }),
+      new OpenAIEmbeddings({ model: "ollama:north-mini-code-1.0" }),
     );
     await vectorStore.addDocuments(allSplits);
     ```
