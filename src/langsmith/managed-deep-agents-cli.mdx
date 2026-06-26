@@ -10,7 +10,7 @@ The `deepagents` CLI, installed from the `deepagents-cli` package, provides depl
 Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
 </Note>
 
-For the fastest end-to-end path, see the [quickstart](/langsmith/managed-deep-agents-quickstart). For workflow guides, see [Connect tools](/langsmith/managed-deep-agents-mcp), [Deploy an agent](/langsmith/managed-deep-agents-deploy), and [Run an agent](/langsmith/managed-deep-agents-invoke).
+For the fastest end-to-end path, see the [quickstart](/langsmith/managed-deep-agents-quickstart). For workflow guides, see [Connect tools](/langsmith/managed-deep-agents-mcp) and [Deploy an agent](/langsmith/managed-deep-agents-deploy).
 
 ## Requirements
 
@@ -352,10 +352,9 @@ my-agent/
 | `description` | Optional agent description. |
 | `agent_id` | Optional existing Managed Deep Agent ID to update. |
 | `model` | Optional shorthand model identifier in `{provider}:{model_id}` form. |
-| `runtime` | Optional API-shaped runtime object. Use either `model` or `runtime`, not both. |
 | `backend` | Optional backend configuration. |
 | `permissions` | Optional identity, visibility, and tenant access settings. |
-| `extras` | Optional extra metadata passed through to the API. |
+| `extras` | Optional extra metadata. |
 
 ### Configure the backend
 
@@ -465,6 +464,6 @@ Example subagent `agent.json`:
 }
 ```
 
-The legacy `model_id` key is still accepted in local subagent files, but new projects should use `model`. The REST API `SubagentSpec` uses `model_id`.
+The legacy `model_id` key is still accepted in local subagent files, but new projects should use `model`.
 
 Subagent names come from directory names. Names are checked case insensitively for duplicates.
