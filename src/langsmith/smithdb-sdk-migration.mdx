@@ -43,6 +43,10 @@ Query runs from a project with optional filtering and field projection. Returns 
 
 #### Examples
 
+**Basic query**
+
+Migrate `list_runs` to `runs.query`. Field selection is now required via `selects`, and `run_type` values must be uppercase.
+
 <Tabs>
   <Tab title="Python">
     <Note>Requires `langsmith>=0.9.2`.</Note>
@@ -908,6 +912,10 @@ TODO ‼️
 Fetch a single run by ID. Returns only the run ID by default—specify a field selection list to retrieve additional data.
 
 #### Examples
+
+**Basic retrieval**
+
+Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by default—pass `selects` to request additional fields.
 
 <Tabs>
   <Tab title="Python">
