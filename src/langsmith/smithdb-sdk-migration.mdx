@@ -85,19 +85,24 @@ Query runs from a project with optional filtering and field projection. Returns 
     ```
 
     ```python After
+    import asyncio
+
     from langsmith import Client
 
-    client = Client()
 
-    page = client.runs.query(
-        project_name="my-project",
-        run_type="LLM",
-        filter='and(eq(status, "success"), gt(total_tokens, 100))',
-        selects=["ID", "NAME", "STATUS"],
-    )
+    async def main():
+        client = Client()
 
-    for run in page:
-        print(run["ID"], run["NAME"], run["STATUS"])
+        async for run in client.runs.query(
+            project_name="my-project",
+            run_type="LLM",
+            filter='and(eq(status, "success"), gt(total_tokens, 100))',
+            selects=["ID", "NAME", "STATUS"],
+        ):
+            print(run["ID"], run["NAME"], run["STATUS"])
+
+
+    asyncio.run(main())
     ```
     </CodeGroup>
   </Tab>
@@ -192,12 +197,20 @@ runs = client.list_runs(project_name="my-project")
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(project_ids=[str(project.id)])
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(project_ids=[str(project.id)]):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -244,16 +257,24 @@ runs = client.list_runs(project_name="my-project")
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-# must explicitly list every field needed; default returns only id
-runs = client.runs.query(
-    project_ids=[str(project.id)],
-    selects=["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
-)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    # must explicitly list every field needed; default returns only id
+    async for run in client.runs.query(
+        project_ids=[str(project.id)],
+        selects=["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
+    ):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -305,18 +326,25 @@ runs = client.list_runs(
 ```
 
 ```python After
+import asyncio
 from datetime import datetime, timedelta
 
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(
-    project_ids=[str(project.id)],
-    min_start_time=datetime.now() - timedelta(days=1),
-    run_type="LLM",
-)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(
+        project_ids=[str(project.id)],
+        min_start_time=datetime.now() - timedelta(days=1),
+        run_type="LLM",
+    ):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -362,12 +390,20 @@ runs = client.list_runs(project_name="my-project", is_root=True)
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(project_ids=[str(project.id)], is_root=True)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(project_ids=[str(project.id)], is_root=True):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -413,15 +449,23 @@ runs = client.list_runs(id=["<run-id-1>", "<run-id-2>"])
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(
-    project_ids=[str(project.id)],
-    ids=["<run-id-1>", "<run-id-2>"],
-)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(
+        project_ids=[str(project.id)],
+        ids=["<run-id-1>", "<run-id-2>"],
+    ):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -472,19 +516,26 @@ runs = itertools.islice(
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = []
-async for run in client.runs.query(
-    project_ids=[str(project.id)],
-    selects=["ID", "NAME"],
-):
-    runs.append(run)
-    if len(runs) >= 150:
-        break
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    runs = []
+    async for run in client.runs.query(
+        project_ids=[str(project.id)],
+        selects=["ID", "NAME"],
+    ):
+        runs.append(run)
+        if len(runs) >= 150:
+            break
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -530,12 +581,20 @@ runs = client.list_runs(project_name="my-project", error=True)
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(project_ids=[str(project.id)], has_error=True)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(project_ids=[str(project.id)], has_error=True):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -582,13 +641,21 @@ runs = client.list_runs(project_name="my-project", filter=filter_str)
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(project_ids=[str(project.id)], filter=filter_str)
+async def main():
+    client = Client()
+
+    filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -639,17 +706,25 @@ runs = client.list_runs(project_name="my-project", filter=filter_str)
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-filter_str = (
-    'and(gt(start_time, "2023-07-15T12:34:56Z"),'
-    ' or(neq(status, "error"),'
-    '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
-)
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(project_ids=[str(project.id)], filter=filter_str)
+async def main():
+    client = Client()
+
+    filter_str = (
+        'and(gt(start_time, "2023-07-15T12:34:56Z"),'
+        ' or(neq(status, "error"),'
+        '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
+    )
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -700,17 +775,25 @@ runs = client.list_runs(
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-runs = client.runs.query(
-    project_ids=[str(project.id)],
-    filter='eq(name, "RetrieveDocs")',
-    trace_filter='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
-    tree_filter='eq(name, "ExpandQuery")',
-)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for run in client.runs.query(
+        project_ids=[str(project.id)],
+        filter='eq(name, "RetrieveDocs")',
+        trace_filter='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
+        tree_filter='eq(name, "ExpandQuery")',
+    ):
+        ...
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -803,15 +886,22 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     ```
 
     ```python After
+    import asyncio
+
     from langsmith import Client
 
-    client = Client()
 
-    run = client.runs.retrieve(
-        run_id="<run-id>",
-        select=["NAME", "STATUS", "TOTAL_TOKENS"],
-    )
-    print(run["NAME"], run["STATUS"], run["TOTAL_TOKENS"])
+    async def main():
+        client = Client()
+
+        run = await client.runs.retrieve(
+            run_id="<run-id>",
+            select=["NAME", "STATUS", "TOTAL_TOKENS"],
+        )
+        print(run["NAME"], run["STATUS"], run["TOTAL_TOKENS"])
+
+
+    asyncio.run(main())
     ```
     </CodeGroup>
   </Tab>
@@ -885,16 +975,23 @@ run = client.read_run("<run-id>")
 ```
 
 ```python After
+import asyncio
+
 from langsmith import Client
 
-client = Client()
 
-project = client.read_project(project_name="my-project")
-run = client.runs.retrieve(
-    run_id="<run-id>",
-    project_id=str(project.id),
-    start_time="2025-01-01T12:00:00Z",
-)
+async def main():
+    client = Client()
+
+    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    run = await client.runs.retrieve(
+        run_id="<run-id>",
+        project_id=str(project.id),
+        start_time="2025-01-01T12:00:00Z",
+    )
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
