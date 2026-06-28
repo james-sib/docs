@@ -797,3 +797,7 @@ packages:
   js: "n/a"
   downloads: 188
   downloads_updated_at: '2026-06-15T00:31:43.789982+00:00'
+- name: langchain-verifly
+  name_title: Verifly
+  repo: james-sib/langchain-verifly
+  js: "n/a"
