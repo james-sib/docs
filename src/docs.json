@@ -1654,7 +1654,7 @@
                   "langsmith/sandbox-permissions",
                   "langsmith/sandbox-cli",
                   "langsmith/sandbox-sdk",
-                  "langsmith/sandbox-harbor"
+                  "langsmith/harbor-integrations"
                 ]
               },
               {
@@ -2254,6 +2254,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/langsmith/sandbox-harbor",
+      "destination": "/langsmith/harbor-integrations#sandboxes"
+    },
     {
       "source": "/build-overview",
       "destination": "/oss/python/build-overview"
